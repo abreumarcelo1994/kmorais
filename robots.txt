@@ -1,16 +1,28 @@
-# Robots.txt - Kelly Morais UGC Portfolio
+# Robots.txt — Kelly Morais UGC Portfolio & Official Assets
+# Protocolo oficial para mecanismos de busca e sistemas de busca generativa (LLMs)
+
 User-agent: *
 Allow: /
+Disallow: /admin.html
+Disallow: /admin.js
+Disallow: /admin.css
 
-# Motores de Busca Principais
+# Motores de Busca Tradicionais (Google, Bing, Yahoo, DuckDuckGo, Baidu, Yandex)
 User-agent: Googlebot
+Allow: /
+Disallow: /admin.html
+Disallow: /admin.js
+Disallow: /admin.css
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Googlebot-Video
 Allow: /
 
 User-agent: Bingbot
 Allow: /
-
-User-agent: Slurp
-Allow: /
+Disallow: /admin.html
 
 User-agent: DuckDuckBot
 Allow: /
@@ -21,7 +33,7 @@ Allow: /
 User-agent: Yandex
 Allow: /
 
-# AI, LLM & Generative Search Bots (Explicitamente Autorizados para GEO / Indexação)
+# Motores e Agentes de IA / Busca Generativa (GEO - Generative Engine Optimization)
 User-agent: Google-Extended
 Allow: /
 
@@ -58,6 +70,6 @@ Allow: /
 User-agent: Bytespider
 Allow: /
 
-# Sitemaps & Metadados para IAs e Motores de Busca
+# Sitemap Canônico & Metadados Estruturados para IAs
 Sitemap: https://abreumarcelo1994.github.io/kmorais/sitemap.xml
-# LLMs context file: https://abreumarcelo1994.github.io/kmorais/llms.txt
+# LLMs Full Context Specification: https://abreumarcelo1994.github.io/kmorais/llms.txt

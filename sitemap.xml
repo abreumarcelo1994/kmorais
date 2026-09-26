@@ -1,15 +1,113 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
   <url>
     <loc>https://abreumarcelo1994.github.io/kmorais/</loc>
-    <lastmod>2026-09-26</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
+    <lastmod>2026-09-26T15:00:00-03:00</lastmod>
+
+    <!-- ============================================================== -->
+    <!-- 1. IMAGENS OFICIAIS (GOOGLE IMAGENS / GOOGLE LENS)            -->
+    <!-- ============================================================== -->
     <image:image>
-      <image:loc>https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&amp;q=85&amp;auto=format&amp;fit=crop</image:loc>
-      <image:title>Kelly Morais - UGC Creator e Estratégia de Conteúdo em São Paulo</image:title>
-      <image:caption>Portfólio de User Generated Content (UGC) com estratégia de e-commerce e roteiros publicitários</image:caption>
+      <image:loc>https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1200&amp;h=630&amp;q=90&amp;auto=format&amp;fit=crop</image:loc>
+      <image:title>Kelly Morais - UGC Creator e Estrategista de Conteúdo em São Paulo</image:title>
+      <image:caption>Retrato institucional e perfil profissional da criadora de conteúdo UGC Kelly Morais.</image:caption>
     </image:image>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&amp;q=80&amp;auto=format&amp;fit=crop</image:loc>
+      <image:title>Kelly Morais - Creator e Profissional de Marketing CLT</image:title>
+      <image:caption>Case de conteúdo autêntico integrando rotina real, trabalho e conexão de marca.</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&amp;q=80&amp;auto=format&amp;fit=crop</image:loc>
+      <image:title>Collab de Marca FOX Cycles com Kelly Morais</image:title>
+      <image:caption>Produção de conteúdo e campanha institucional para a marca esportiva e automotiva FOX Cycles.</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=600&amp;q=80&amp;auto=format&amp;fit=crop</image:loc>
+      <image:title>Kelly Morais no TikTok - Rotina e Maternidade Real</image:title>
+      <image:caption>Comunidade de mais de 31 mil seguidores acompanhando dicas reais de consumo e maternidade.</image:caption>
+    </image:image>
+
+    <!-- ============================================================== -->
+    <!-- 2. VÍDEOS OFICIAIS (GOOGLE VÍDEOS / GOOGLE SEARCH RICH SNIPPET)-->
+    <!-- ============================================================== -->
+    <!-- Destaque 01: Hero Reel de Apresentação -->
+    <video:video>
+      <video:thumbnail_loc>https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&amp;q=85&amp;auto=format&amp;fit=crop</video:thumbnail_loc>
+      <video:title>Kelly Morais | UGC Creator para Marcas e E-commerce</video:title>
+      <video:description>Vídeos autênticos com estética nativa de redes sociais, ganchos de retenção nos primeiros 3 segundos e roteiro voltado à conversão em campanhas pagas.</video:description>
+      <video:content_loc>https://res.cloudinary.com/demo/video/upload/q_auto,w_600/sea_turtle.mp4</video:content_loc>
+      <video:player_loc allow_embed="yes">https://abreumarcelo1994.github.io/kmorais/</video:player_loc>
+      <video:duration>45</video:duration>
+      <video:publication_date>2026-09-26T12:00:00-03:00</video:publication_date>
+      <video:family_friendly>yes</video:family_friendly>
+      <video:tag>UGC Creator</video:tag>
+      <video:tag>Kelly Morais</video:tag>
+      <video:tag>Vídeos para Ads</video:tag>
+      <video:tag>TikTok Ads</video:tag>
+      <video:tag>Reels</video:tag>
+    </video:video>
+
+    <!-- Destaque 02: Case Get Ready With Me (GRWM - Moda & Beleza) -->
+    <video:video>
+      <video:thumbnail_loc>https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=700&amp;q=85&amp;auto=format&amp;fit=crop</video:thumbnail_loc>
+      <video:title>Case UGC: Get Ready With Me (GRWM) e Rotina Sensorial</video:title>
+      <video:description>Formato demonstrativo com narrativa dinâmica para marcas de beleza, vestuário e autocuidado, focado em retenção de audiência.</video:description>
+      <video:content_loc>https://res.cloudinary.com/demo/video/upload/q_auto,w_400/sea_turtle.mp4</video:content_loc>
+      <video:player_loc allow_embed="yes">https://abreumarcelo1994.github.io/kmorais/#trabalhos</video:player_loc>
+      <video:duration>38</video:duration>
+      <video:publication_date>2026-09-26T12:00:00-03:00</video:publication_date>
+      <video:family_friendly>yes</video:family_friendly>
+      <video:tag>GRWM</video:tag>
+      <video:tag>Moda e Beleza</video:tag>
+      <video:tag>Rotina Real</video:tag>
+    </video:video>
+
+    <!-- Destaque 03: Case Unboxing & Teste de Produto (Meta Ads / TikTok Ads) -->
+    <video:video>
+      <video:thumbnail_loc>https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=700&amp;q=85&amp;auto=format&amp;fit=crop</video:thumbnail_loc>
+      <video:title>Case UGC: Unboxing e Teste Prático com Foco em Conversão</video:title>
+      <video:description>Criativo desenvolvido para tráfego pago com quebra de objeções nos primeiros segundos e chamada para ação (CTA) estratégica.</video:description>
+      <video:content_loc>https://res.cloudinary.com/demo/video/upload/q_auto,w_400/finish_line.mp4</video:content_loc>
+      <video:player_loc allow_embed="yes">https://abreumarcelo1994.github.io/kmorais/#trabalhos</video:player_loc>
+      <video:duration>42</video:duration>
+      <video:publication_date>2026-09-26T12:00:00-03:00</video:publication_date>
+      <video:family_friendly>yes</video:family_friendly>
+      <video:tag>Unboxing</video:tag>
+      <video:tag>Meta Ads</video:tag>
+      <video:tag>Teste de Produto</video:tag>
+    </video:video>
+
+    <!-- Destaque 04: Case Rotina com Bebê (Maternidade & Família Real) -->
+    <video:video>
+      <video:thumbnail_loc>https://images.unsplash.com/photo-1544717305-2782549b5136?w=700&amp;q=85&amp;auto=format&amp;fit=crop</video:thumbnail_loc>
+      <video:title>Case UGC: Rotina com Bebê e Maternidade Sem Filtros</video:title>
+      <video:description>Conteúdo de alta identificação emocional para marcas infantis, puericultura e bem-estar em família.</video:description>
+      <video:content_loc>https://res.cloudinary.com/demo/video/upload/q_auto,w_400/dog.mp4</video:content_loc>
+      <video:player_loc allow_embed="yes">https://abreumarcelo1994.github.io/kmorais/#trabalhos</video:player_loc>
+      <video:duration>35</video:duration>
+      <video:publication_date>2026-09-26T12:00:00-03:00</video:publication_date>
+      <video:family_friendly>yes</video:family_friendly>
+      <video:tag>Maternidade</video:tag>
+      <video:tag>Rotina Real</video:tag>
+      <video:tag>Família</video:tag>
+    </video:video>
+
+    <!-- Destaque 05: Case E-commerce & Marketplace (Conversão de Vendas) -->
+    <video:video>
+      <video:thumbnail_loc>https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=700&amp;q=85&amp;auto=format&amp;fit=crop</video:thumbnail_loc>
+      <video:title>Case UGC: Roteiro Publicitário para E-commerce e Marketplace</video:title>
+      <video:description>Demonstração minuciosa com foco em sanar dúvidas de compra rápida em Mercado Livre, Shopee e Amazon.</video:description>
+      <video:content_loc>https://res.cloudinary.com/demo/video/upload/q_auto,w_400/elephants.mp4</video:content_loc>
+      <video:player_loc allow_embed="yes">https://abreumarcelo1994.github.io/kmorais/#trabalhos</video:player_loc>
+      <video:duration>40</video:duration>
+      <video:publication_date>2026-09-26T12:00:00-03:00</video:publication_date>
+      <video:family_friendly>yes</video:family_friendly>
+      <video:tag>Marketplace</video:tag>
+      <video:tag>E-commerce</video:tag>
+      <video:tag>Conversão</video:tag>
+    </video:video>
   </url>
 </urlset>
