@@ -19,7 +19,12 @@ async function sha256(message) {
 }
 
 function utf8ToBase64(str) {
-  return btoa(unescape(encodeURIComponent(str)));
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
 }
 
 // Rate limiting: bloqueia login após 5 tentativas erradas por 30 segundos
@@ -183,6 +188,11 @@ class KMAdminPanel {
     this.selectedPosterFile = null;
     this.videoDropzoneCtrl = null;
     this.posterDropzoneCtrl = null;
+
+    // Inicializa a barra superior, o backup e a sincronização com o GitHub imediatamente
+    this.setupToolbar();
+    this.setupGitHubSync();
+    this.setupJSONBackup();
 
     this.initAuth();
   }
@@ -1225,6 +1235,19 @@ class KMAdminPanel {
       } catch (err) {}
     }
 
+    // 1.2 Salva diretamente no arquivo local do disco (quando rodando via node server.js)
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      try {
+        await fetch('/api/save-content', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(contentToSave)
+        });
+      } catch (diskErr) {
+        console.warn('Admin: aviso ao gravar content.json no disco local', diskErr);
+      }
+    }
+
     // 2. Publica automaticamente no GitHub
     try {
       const cfg = getGitHubConfig();
@@ -1269,13 +1292,24 @@ class KMAdminPanel {
         });
 
         if (putRes.ok) {
-          this.showToast('🚀 Salvo e publicado no site oficial com sucesso!');
+          this.showToast('🚀 Salvo no GitHub com sucesso! O site oficial já está atualizando.');
         } else {
-          console.warn('GitHub publish warning status:', putRes.status);
-          this.showToast('✓ Salvo no navegador! (Atualização no GitHub pendente)');
+          const errData = await putRes.json().catch(() => ({}));
+          console.warn('GitHub publish warning status:', putRes.status, errData);
+          if (putRes.status === 401) {
+            alert('Token do GitHub expirado ou inválido. Por favor, reconfigure seu token.');
+            document.getElementById('admin-github-modal')?.classList.remove('is-hidden');
+          } else if (putRes.status === 404) {
+            alert(`Repositório "${cfg.repo}" não encontrado ou token sem permissão de escrita ("repo").`);
+            document.getElementById('admin-github-modal')?.classList.remove('is-hidden');
+          } else {
+            alert(`Aviso ao publicar no GitHub (${putRes.status}): ${errData.message || 'Verifique as permissões do token.'}`);
+          }
+          this.showToast('⚠️ Salvo localmente, mas falhou ao enviar para o GitHub.');
         }
       } else {
-        this.showToast('✓ Salvo no navegador!');
+        this.showToast('⚠️ Salvo localmente! Conecte seu Token do GitHub para subir direto.');
+        document.getElementById('admin-github-modal')?.classList.remove('is-hidden');
       }
     } catch (err) {
       console.warn('GitHub publish error:', err);
@@ -1303,6 +1337,35 @@ class KMAdminPanel {
     const ghSaveConfigBtn = document.getElementById('admin-gh-save-config-btn');
     const ghTokenToggle = document.getElementById('admin-gh-token-toggle');
 
+    const updateBtnState = () => {
+      const cfg = getGitHubConfig();
+      if (ghConfigBtn) {
+        if (cfg && cfg.token) {
+          ghConfigBtn.innerHTML = '🟢 GitHub Conectado';
+          ghConfigBtn.title = 'GitHub conectado para upload direto na nuvem. Clique para alterar token.';
+          ghConfigBtn.style.borderColor = 'var(--lime)';
+        } else {
+          ghConfigBtn.innerHTML = '⚙️ Conectar GitHub';
+          ghConfigBtn.title = 'Configure seu Token do GitHub para subir alterações direto na nuvem.';
+          ghConfigBtn.style.borderColor = '';
+        }
+      }
+    };
+    updateBtnState();
+
+    // Se estiver rodando localmente, carrega as configuracoes locais de local-config.json
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      fetch('/api/github-config')
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data && data.token) {
+            saveGitHubConfig(data);
+            updateBtnState();
+          }
+        })
+        .catch(() => {});
+    }
+
     const openModal = () => {
       const cfg = getGitHubConfig();
       if (ghTokenInput) ghTokenInput.value = cfg.token || '';
@@ -1314,9 +1377,11 @@ class KMAdminPanel {
         ghStatusEl.textContent = '';
       }
       ghModal?.classList.remove('is-hidden');
+      ghModal?.classList.add('is-open');
     };
 
     const closeModal = () => {
+      ghModal?.classList.remove('is-open');
       ghModal?.classList.add('is-hidden');
     };
 
@@ -1354,6 +1419,7 @@ class KMAdminPanel {
         }
 
         saveGitHubConfig({ token, repo, branch, path });
+        updateBtnState();
         this.showToast('✓ Configuração do GitHub salva com sucesso!');
         closeModal();
       });

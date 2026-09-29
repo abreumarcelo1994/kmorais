@@ -48,7 +48,7 @@ function serveFile(req, res, filePath) {
         'Accept-Ranges': 'bytes',
         'Content-Length': chunkSize,
         'Content-Type': contentType,
-        'Access-Control-Allow-Origin': 'http://localhost:3000'
+        'Access-Control-Allow-Origin': req.headers.origin || '*'
       });
 
       const stream = fs.createReadStream(filePath, { start, end });
@@ -61,7 +61,7 @@ function serveFile(req, res, filePath) {
       'Content-Type': contentType,
       'Content-Length': totalSize,
       'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Access-Control-Allow-Origin': 'http://localhost:3000'
+      'Access-Control-Allow-Origin': req.headers.origin || '*'
     });
 
     const stream = fs.createReadStream(filePath);
@@ -73,7 +73,7 @@ const server = http.createServer((req, res) => {
   // CORS Preflight
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
-      'Access-Control-Allow-Origin': 'http://localhost:3000',
+      'Access-Control-Allow-Origin': req.headers.origin || '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': '*'
     });
@@ -83,6 +83,53 @@ const server = http.createServer((req, res) => {
 
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   let pathname = decodeURIComponent(url.pathname);
+
+  // Endpoint de salvamento direto no disco para desenvolvimento local
+  if (req.method === 'POST' && pathname === '/api/save-content') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk;
+      if (body.length > 5 * 1024 * 1024) {
+        res.writeHead(413, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': req.headers.origin || '*' });
+        res.end(JSON.stringify({ error: 'Payload too large' }));
+        req.destroy();
+      }
+    });
+    req.on('end', () => {
+      try {
+        const parsed = JSON.parse(body);
+        fs.writeFileSync(path.join(BASE_DIR, 'content.json'), JSON.stringify(parsed, null, 2), 'utf-8');
+        res.writeHead(200, {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': req.headers.origin || '*'
+        });
+        res.end(JSON.stringify({ success: true, message: 'content.json salvo no disco!' }));
+      } catch (err) {
+        res.writeHead(400, {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': req.headers.origin || '*'
+        });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+  // Endpoint para carregar configuracao local do GitHub sem comitar no repositorio
+  if (req.method === 'GET' && pathname === '/api/github-config') {
+    const configPath = path.join(BASE_DIR, 'local-config.json');
+    if (fs.existsSync(configPath)) {
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': req.headers.origin || '*'
+      });
+      res.end(fs.readFileSync(configPath, 'utf8'));
+      return;
+    }
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Config not found' }));
+    return;
+  }
 
   if (pathname === '/') {
     pathname = '/index.html';
@@ -99,11 +146,29 @@ const server = http.createServer((req, res) => {
   serveFile(req, res, safePath);
 });
 
-server.listen(PORT, () => {
+let currentPort = parseInt(PORT, 10);
+
+server.on('listening', () => {
+  const address = server.address();
+  const actualPort = typeof address === 'object' && address ? address.port : currentPort;
   console.log('----------------------------------------------------');
   console.log(`🚀 Servidor local KMORAIS ativo!`);
-  console.log(`👉 Site público:       http://localhost:${PORT}/index.html`);
-  console.log(`👉 Painel Admin (CMS): http://localhost:${PORT}/admin.html`);
+  console.log(`👉 Site público:       http://localhost:${actualPort}/index.html`);
+  console.log(`👉 Painel Admin (CMS): http://localhost:${actualPort}/admin.html`);
   console.log('----------------------------------------------------');
 });
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.log(`⚠️  Porta ${currentPort} já está em uso.`);
+    currentPort += 1;
+    console.log(`🔄 Tentando porta ${currentPort}...`);
+    server.listen(currentPort);
+  } else {
+    console.error('❌ Erro no servidor:', err);
+    process.exit(1);
+  }
+});
+
+server.listen(currentPort);
 

@@ -94,9 +94,9 @@ cd kmorais
 npm start
 ```
 
-O servidor iniciará em:
-- **Site Público**: `http://localhost:3000/index.html`
-- **Painel CMS**: `http://localhost:3000/admin.html`
+O servidor iniciará por padrão na porta 3000 (com detecção automática e fallback para a próxima porta livre caso 3000 esteja ocupada):
+- **Site Público**: `http://localhost:3000/index.html` (ou porta alternativa exibida no terminal, ex: `3002`)
+- **Painel CMS**: `http://localhost:3000/admin.html` (ou porta alternativa)
 
 ---
 

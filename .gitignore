@@ -3,3 +3,5 @@ node_modules/
 Thumbs.db
 .vscode/
 _backup*/
+.env*
+local-config.json

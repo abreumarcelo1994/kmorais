@@ -347,8 +347,15 @@ body.is-admin-mode .site-header {
 }
 
 .admin-modal-overlay.is-open {
-  opacity: 1;
-  pointer-events: auto;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  display: flex !important;
+}
+
+.admin-modal-overlay.is-hidden {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 .admin-modal-card {

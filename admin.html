@@ -49,6 +49,7 @@
     </div>
     <div class="admin-toolbar-actions">
       <button type="button" id="admin-save-btn" class="admin-btn admin-btn-save" title="Salva e publica automaticamente no site oficial para todos os visitantes">&#128190; Salvar e Publicar</button>
+      <button type="button" id="admin-gh-config-btn" class="admin-btn admin-btn-secondary" title="Configurar Token do GitHub para subir direto na nuvem">&#9881;&#65039; Conectar GitHub</button>
       <button type="button" id="admin-export-btn" class="admin-btn admin-btn-secondary" title="Baixar backup do conteúdo">&#128229; Exportar</button>
       <button type="button" id="admin-import-btn" class="admin-btn admin-btn-secondary" title="Carregar arquivo de conteúdo">&#128228; Importar</button>
       <input type="file" id="admin-import-file" accept=".json" style="display: none;">
@@ -649,7 +650,7 @@
 
   <!-- MODAL DE CONFIGURAÇÃO / SINCRONIZAÇÃO GITHUB -->
   <div id="admin-github-modal" class="admin-modal-overlay is-hidden" role="dialog" aria-modal="true" aria-labelledby="admin-gh-modal-title">
-    <div class="admin-modal admin-github-modal-box">
+    <div class="admin-modal-card admin-github-modal-box">
       <button type="button" class="admin-modal-close" id="admin-gh-modal-close" aria-label="Fechar modal">&times;</button>
       <div class="admin-gh-badge"><span>●</span> Publicação Oficial no GitHub</div>
       <h3 id="admin-gh-modal-title">Conectar Repositório do GitHub</h3>
