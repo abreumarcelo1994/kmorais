@@ -100,9 +100,38 @@ O servidor iniciará por padrão na porta 3000 (com detecção automática e fal
 
 ---
 
-## 6. Fluxo de Publicação e Deploy
+## 6. Painel CMS Visual e Sincronização Direta com GitHub
 
-Toda alteração enviada para o branch `main` dispara automaticamente a esteira do GitHub Actions (`.github/workflows/deploy.yml`), publicando as alterações em produção em menos de 60 segundos.
+O projeto possui um editor visual in-browser (`admin.html`) que permite alterar textos, mídias e cases diretamente na tela, com salvamento e publicação imediata no GitHub sem depender de comandos no terminal.
+
+### Acesso ao Painel
+- **Em Produção**: `https://abreumarcelo1994.github.io/kmorais/admin.html`
+- **Em Desenvolvimento Local**: `http://localhost:3002/admin.html`
+- **Senha de Acesso**: `@marcelo123`
+
+### Como Ativar a Publicação Direta (Para Colaboradores)
+Para que qualquer alteração feita no painel seja enviada diretamente para a branch `main` do GitHub e entre no ar automaticamente para todos os visitantes e outros colaboradores:
+
+1. **Permissão de Colaborador**: Sua conta do GitHub precisa ser adicionada como colaboradora do repositório (`abreumarcelo1994/kmorais`) com permissão de escrita (*Write*).
+2. **Gerar Token Pessoal (PAT)**:
+   - Acesse [github.com/settings/tokens](https://github.com/settings/tokens).
+   - Clique em **Generate new token** &rarr; **Generate new token (classic)**.
+   - Em *Note*, digite: `KMORAIS CMS`.
+   - Marque a caixa de permissão: `repo` (Full control of repositories).
+   - Gere o token e copie o código `ghp_...`.
+3. **Conectar no Painel**:
+   - No topo do painel `admin.html`, clique em **`⚙️ Conectar GitHub`**.
+   - Cole seu código `ghp_...`, teste a conexão e clique em **Salvar Configuração**.
+   - O botão ficará verde: **`🟢 GitHub Conectado`**.
+4. **Publicação com 1 Clique**:
+   - Edite qualquer elemento na página e clique em **`💾 Salvar e Publicar`**.
+   - O painel enviará as alterações diretamente para o arquivo `content.json` no GitHub via API, disparando o deploy contínuo via GitHub Actions em produção.
+
+---
+
+## 7. Fluxo de Publicação e Deploy Contínuo (CI/CD)
+
+Toda alteração enviada para o branch `main` (seja via Git ou via painel CMS) dispara automaticamente a esteira do GitHub Actions (`.github/workflows/deploy.yml`), publicando as alterações em produção em menos de 60 segundos.
 
 ```bash
 git add .
@@ -112,7 +141,7 @@ git push origin main
 
 ---
 
-## 7. Contato Comercial & Direitos
+## 8. Contato Comercial & Direitos
 
 - **Website Oficial**: [abreumarcelo1994.github.io/kmorais](https://abreumarcelo1994.github.io/kmorais/)
 - **WhatsApp**: [+55 11 95636-7834](https://wa.me/5511956367834)
