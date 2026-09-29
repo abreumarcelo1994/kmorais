@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-09-29T02:34:46.611Z",
+  "updatedAt": "2026-09-29T02:35:24.034Z",
   "hero": {
     "eyebrow": "KELLY MORAIS · CREATOR + MARKETING",
     "title": "Conteúdo que<br><em>parece conversa</em><br>e gera ação.",
     "text": "UGC com a autenticidade de uma mãe real, a visão de quem fez marketing de e-commerce e o roteiro que uma campanha precisa para performar.",
     "sticker": "a vibe que<br><strong>para o scroll</strong>",
-    "video": "",
+    "video": "idb:video_1790649319517_vr4b",
     "poster": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&q=85&auto=format&fit=crop"
   },
   "brandsTitle": "Grandes marcas <em>confiam.</em>",
@@ -71,7 +71,7 @@
   "portfolioIntro": "Do roteiro ao video final, cada entrega nasce alinhada ao objetivo da marca: conectar, explicar ou converter.",
   "portfolioVideos": [
     {
-      "video": "",
+      "video": "https://res.cloudinary.com/demo/video/upload/q_auto,w_400/sea_turtle.mp4",
       "poster": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=700&q=85&auto=format&fit=crop",
       "label": "get ready with me"
     },
