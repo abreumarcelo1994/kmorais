@@ -1252,10 +1252,11 @@ class KMAdminPanel {
     try {
       const cfg = getGitHubConfig();
       if (cfg && cfg.token) {
-        // Obter SHA atual do content.json
+        // Obter SHA atual do content.json evitando cache do navegador
         let currentSha = null;
         try {
           const checkRes = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}&_t=${Date.now()}`, {
+            cache: 'no-store',
             headers: {
               'Authorization': `Bearer ${cfg.token}`,
               'Accept': 'application/vnd.github+json',
@@ -1271,25 +1272,57 @@ class KMAdminPanel {
         const jsonString = JSON.stringify(contentToSave, null, 2);
         const base64Content = utf8ToBase64(jsonString);
 
-        const payload = {
-          message: `cms: atualiza conteudo do site via painel administrativo [${new Date().toLocaleTimeString('pt-BR')}]`,
-          content: base64Content,
-          branch: cfg.branch || 'main'
-        };
-        if (currentSha) {
-          payload.sha = currentSha;
-        }
+        const makePutRequest = async (shaToUse) => {
+          const payload = {
+            message: `cms: atualiza conteudo do site via painel administrativo [${new Date().toLocaleTimeString('pt-BR')}]`,
+            content: base64Content,
+            branch: cfg.branch || 'main'
+          };
+          if (shaToUse) {
+            payload.sha = shaToUse;
+          }
 
-        const putRes = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${cfg.token}`,
-            'Accept': 'application/vnd.github+json',
-            'Content-Type': 'application/json',
-            'X-GitHub-Api-Version': '2022-11-28'
-          },
-          body: JSON.stringify(payload)
-        });
+          return fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${cfg.token}`,
+              'Accept': 'application/vnd.github+json',
+              'Content-Type': 'application/json',
+              'X-GitHub-Api-Version': '2022-11-28'
+            },
+            body: JSON.stringify(payload)
+          });
+        };
+
+        let putRes = await makePutRequest(currentSha);
+
+        // Auto-recuperação de conflito 409 (quando alguém publicou ou SHA estava dessincronizado)
+        if (putRes.status === 409) {
+          const errData = await putRes.clone().json().catch(() => ({}));
+          const shaMatch = errData.message && errData.message.match(/is at ([a-f0-9]{40})/i);
+          let freshSha = shaMatch ? shaMatch[1] : null;
+
+          if (!freshSha) {
+            try {
+              const retryCheck = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}&_t=${Date.now()}`, {
+                cache: 'no-store',
+                headers: {
+                  'Authorization': `Bearer ${cfg.token}`,
+                  'Accept': 'application/vnd.github+json',
+                  'X-GitHub-Api-Version': '2022-11-28'
+                }
+              });
+              if (retryCheck.ok) {
+                const freshData = await retryCheck.json();
+                freshSha = freshData.sha;
+              }
+            } catch (e) {}
+          }
+
+          if (freshSha && freshSha !== currentSha) {
+            putRes = await makePutRequest(freshSha);
+          }
+        }
 
         if (putRes.ok) {
           this.showToast('🚀 Salvo no GitHub com sucesso! O site oficial já está atualizando.');
@@ -1299,9 +1332,11 @@ class KMAdminPanel {
           if (putRes.status === 401) {
             alert('Token do GitHub expirado ou inválido. Por favor, reconfigure seu token.');
             document.getElementById('admin-github-modal')?.classList.remove('is-hidden');
+            document.getElementById('admin-github-modal')?.classList.add('is-open');
           } else if (putRes.status === 404) {
             alert(`Repositório "${cfg.repo}" não encontrado ou token sem permissão de escrita ("repo").`);
             document.getElementById('admin-github-modal')?.classList.remove('is-hidden');
+            document.getElementById('admin-github-modal')?.classList.add('is-open');
           } else {
             alert(`Aviso ao publicar no GitHub (${putRes.status}): ${errData.message || 'Verifique as permissões do token.'}`);
           }
