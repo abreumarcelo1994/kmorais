@@ -188,11 +188,7 @@ class KMAdminPanel {
     this.selectedPosterFile = null;
     this.videoDropzoneCtrl = null;
     this.posterDropzoneCtrl = null;
-
-    // Inicializa a barra superior, o backup e a sincronização com o GitHub imediatamente
-    this.setupToolbar();
-    this.setupGitHubSync();
-    this.setupJSONBackup();
+    this.isSaving = false;
 
     this.initAuth();
   }
@@ -268,6 +264,9 @@ class KMAdminPanel {
   }
 
   setupEditableElements() {
+    if (this._editableDone) return;
+    this._editableDone = true;
+
     // Lista de seletores de textos editáveis seguros
     const textSelectors = [
       '#hero-title',
@@ -315,6 +314,9 @@ class KMAdminPanel {
   }
 
   setupMediaButtons() {
+    if (this._mediaBtnsDone) return;
+    this._mediaBtnsDone = true;
+
     // 0. Marcas (Brand Pills)
     document.querySelectorAll('.brands-grid .brand-pill').forEach((pill, index) => {
       if (pill.querySelector('.admin-edit-brand-btn')) return;
@@ -604,6 +606,9 @@ class KMAdminPanel {
   }
 
   setupToolbar() {
+    if (this._toolbarDone) return;
+    this._toolbarDone = true;
+
     const saveBtn = document.getElementById('admin-save-btn');
     const resetBtn = document.getElementById('admin-reset-btn');
     const logoutBtn = document.getElementById('admin-logout-btn');
@@ -643,7 +648,8 @@ class KMAdminPanel {
   }
 
   setupMediaModal() {
-    if (!this.mediaModal) return;
+    if (!this.mediaModal || this._mediaModalDone) return;
+    this._mediaModalDone = true;
 
     const feedbackEl = document.getElementById('admin-video-url-feedback');
     const videoUrlInput = document.getElementById('admin-modal-video-url');
@@ -1193,7 +1199,87 @@ class KMAdminPanel {
     };
   }
 
+  async publishToGitHub(contentToSave) {
+    const cfg = getGitHubConfig();
+    if (!cfg || !cfg.token) {
+      return { ok: false, missingConfig: true };
+    }
+
+    const fetchCurrentSha = async () => {
+      try {
+        const checkRes = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}&_t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: {
+            'Authorization': `Bearer ${cfg.token}`,
+            'Accept': 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28'
+          }
+        });
+        if (checkRes.ok) {
+          const fileData = await checkRes.json();
+          return fileData.sha || null;
+        }
+      } catch (e) {}
+      return null;
+    };
+
+    const jsonString = JSON.stringify(contentToSave, null, 2);
+    const base64Content = utf8ToBase64(jsonString);
+
+    const makePut = async (shaToUse) => {
+      const payload = {
+        message: `cms: atualiza conteudo do site via painel administrativo [${new Date().toLocaleTimeString('pt-BR')}]`,
+        content: base64Content,
+        branch: cfg.branch || 'main'
+      };
+      if (shaToUse) {
+        payload.sha = shaToUse;
+      }
+
+      return fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${cfg.token}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json',
+          'X-GitHub-Api-Version': '2022-11-28'
+        },
+        body: JSON.stringify(payload)
+      });
+    };
+
+    // 1. Obter SHA atual do content.json
+    let currentSha = await fetchCurrentSha();
+
+    // 2. Primeiro PUT
+    let putRes = await makePut(currentSha);
+
+    // 3. Auto-recuperação se 409 Conflict (outro salvamento acabou de acontecer ou SHA desatualizado)
+    if (putRes.status === 409) {
+      console.warn('Admin CMS: 409 Conflict detectado no GitHub. Aguardando 400ms para auto-recuperação...');
+      await new Promise(r => setTimeout(r, 400));
+      const freshSha = await fetchCurrentSha();
+      if (freshSha) {
+        putRes = await makePut(freshSha);
+      }
+    }
+
+    if (putRes.ok) {
+      return { ok: true };
+    }
+
+    const errData = await putRes.json().catch(() => ({}));
+    return {
+      ok: false,
+      status: putRes.status,
+      message: errData.message || 'Erro ao publicar no GitHub'
+    };
+  }
+
   async saveAllChanges() {
+    if (this.isSaving) return;
+    this.isSaving = true;
+
     const saveBtn = document.getElementById('admin-save-btn');
     const originalText = saveBtn ? saveBtn.innerHTML : '💾 Salvar e Publicar';
     if (saveBtn) {
@@ -1202,154 +1288,83 @@ class KMAdminPanel {
       saveBtn.innerHTML = '⏳ Salvando e publicando...';
     }
 
-    const contentToSave = this.extractCurrentContent();
-    contentToSave.updatedAt = new Date().toISOString();
-
-    // 1. Salva localmente de imediato
-    const savedOk = kmCMS.saveContent(contentToSave);
-
-    // 1.1 Limpeza profunda no IndexedDB: apaga qualquer mídia do PC que não esteja mais sendo usada
     try {
-      const activeMediaIds = [];
-      const collectMediaIds = (obj) => {
-        if (!obj) return;
-        if (typeof obj === 'string') {
-          if (obj.startsWith('idb:')) activeMediaIds.push(obj);
-        } else if (Array.isArray(obj)) {
-          obj.forEach(collectMediaIds);
-        } else if (typeof obj === 'object') {
-          Object.values(obj).forEach(collectMediaIds);
-        }
-      };
-      collectMediaIds(contentToSave);
-      if (window.kmMediaStore?.cleanupOrphans) {
-        await window.kmMediaStore.cleanupOrphans(activeMediaIds);
-      }
-    } catch (cleanErr) {
-      console.warn('Admin: erro ao limpar mídias órfãs do banco', cleanErr);
-    }
+      const contentToSave = this.extractCurrentContent();
+      contentToSave.updatedAt = new Date().toISOString();
 
-    if (window.opener && !window.opener.closed) {
+      // 1. Salva localmente de imediato
+      kmCMS.saveContent(contentToSave);
+
+      // 1.1 Limpeza profunda no IndexedDB: apaga qualquer mídia do PC que não esteja mais sendo usada
       try {
-        window.opener.postMessage({ type: 'CONTENT_UPDATED', data: contentToSave }, window.location.origin);
-      } catch (err) {}
-    }
-
-    // 1.2 Salva diretamente no arquivo local do disco (quando rodando via node server.js)
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      try {
-        await fetch('/api/save-content', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(contentToSave)
-        });
-      } catch (diskErr) {
-        console.warn('Admin: aviso ao gravar content.json no disco local', diskErr);
-      }
-    }
-
-    // 2. Publica automaticamente no GitHub
-    try {
-      const cfg = getGitHubConfig();
-      if (cfg && cfg.token) {
-        // Obter SHA atual do content.json evitando cache do navegador
-        let currentSha = null;
-        try {
-          const checkRes = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}&_t=${Date.now()}`, {
-            cache: 'no-store',
-            headers: {
-              'Authorization': `Bearer ${cfg.token}`,
-              'Accept': 'application/vnd.github+json',
-              'X-GitHub-Api-Version': '2022-11-28'
-            }
-          });
-          if (checkRes.ok) {
-            const fileData = await checkRes.json();
-            currentSha = fileData.sha;
+        const activeMediaIds = [];
+        const collectMediaIds = (obj) => {
+          if (!obj) return;
+          if (typeof obj === 'string') {
+            if (obj.startsWith('idb:')) activeMediaIds.push(obj);
+          } else if (Array.isArray(obj)) {
+            obj.forEach(collectMediaIds);
+          } else if (typeof obj === 'object') {
+            Object.values(obj).forEach(collectMediaIds);
           }
-        } catch (e) {}
-
-        const jsonString = JSON.stringify(contentToSave, null, 2);
-        const base64Content = utf8ToBase64(jsonString);
-
-        const makePutRequest = async (shaToUse) => {
-          const payload = {
-            message: `cms: atualiza conteudo do site via painel administrativo [${new Date().toLocaleTimeString('pt-BR')}]`,
-            content: base64Content,
-            branch: cfg.branch || 'main'
-          };
-          if (shaToUse) {
-            payload.sha = shaToUse;
-          }
-
-          return fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`, {
-            method: 'PUT',
-            headers: {
-              'Authorization': `Bearer ${cfg.token}`,
-              'Accept': 'application/vnd.github+json',
-              'Content-Type': 'application/json',
-              'X-GitHub-Api-Version': '2022-11-28'
-            },
-            body: JSON.stringify(payload)
-          });
         };
-
-        let putRes = await makePutRequest(currentSha);
-
-        // Auto-recuperação de conflito 409 (quando alguém publicou ou SHA estava dessincronizado)
-        if (putRes.status === 409) {
-          const errData = await putRes.clone().json().catch(() => ({}));
-          const shaMatch = errData.message && errData.message.match(/is at ([a-f0-9]{40})/i);
-          let freshSha = shaMatch ? shaMatch[1] : null;
-
-          if (!freshSha) {
-            try {
-              const retryCheck = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}&_t=${Date.now()}`, {
-                cache: 'no-store',
-                headers: {
-                  'Authorization': `Bearer ${cfg.token}`,
-                  'Accept': 'application/vnd.github+json',
-                  'X-GitHub-Api-Version': '2022-11-28'
-                }
-              });
-              if (retryCheck.ok) {
-                const freshData = await retryCheck.json();
-                freshSha = freshData.sha;
-              }
-            } catch (e) {}
-          }
-
-          if (freshSha && freshSha !== currentSha) {
-            putRes = await makePutRequest(freshSha);
-          }
+        collectMediaIds(contentToSave);
+        if (window.kmMediaStore?.cleanupOrphans) {
+          await window.kmMediaStore.cleanupOrphans(activeMediaIds);
         }
+      } catch (cleanErr) {
+        console.warn('Admin: erro ao limpar mídias órfãs do banco', cleanErr);
+      }
 
-        if (putRes.ok) {
-          this.showToast('🚀 Salvo no GitHub com sucesso! O site oficial já está atualizando.');
-        } else {
-          const errData = await putRes.json().catch(() => ({}));
-          console.warn('GitHub publish warning status:', putRes.status, errData);
-          if (putRes.status === 401) {
-            alert('Token do GitHub expirado ou inválido. Por favor, reconfigure seu token.');
-            document.getElementById('admin-github-modal')?.classList.remove('is-hidden');
-            document.getElementById('admin-github-modal')?.classList.add('is-open');
-          } else if (putRes.status === 404) {
-            alert(`Repositório "${cfg.repo}" não encontrado ou token sem permissão de escrita ("repo").`);
-            document.getElementById('admin-github-modal')?.classList.remove('is-hidden');
-            document.getElementById('admin-github-modal')?.classList.add('is-open');
-          } else {
-            alert(`Aviso ao publicar no GitHub (${putRes.status}): ${errData.message || 'Verifique as permissões do token.'}`);
-          }
-          this.showToast('⚠️ Salvo localmente, mas falhou ao enviar para o GitHub.');
+      if (window.opener && !window.opener.closed) {
+        try {
+          window.opener.postMessage({ type: 'CONTENT_UPDATED', data: contentToSave }, window.location.origin);
+        } catch (err) {}
+      }
+
+      // 1.2 Salva diretamente no arquivo local do disco (quando rodando via node server.js)
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        try {
+          await fetch('/api/save-content', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(contentToSave)
+          });
+        } catch (diskErr) {
+          console.warn('Admin: aviso ao gravar content.json no disco local', diskErr);
         }
-      } else {
+      }
+
+      // 2. Publica automaticamente no GitHub
+      const ghResult = await this.publishToGitHub(contentToSave);
+
+      if (ghResult.ok) {
+        this.showToast('🚀 Salvo no GitHub com sucesso! O site oficial já está atualizando.');
+      } else if (ghResult.missingConfig) {
         this.showToast('⚠️ Salvo localmente! Conecte seu Token do GitHub para subir direto.');
         document.getElementById('admin-github-modal')?.classList.remove('is-hidden');
+      } else {
+        console.warn('GitHub publish warning status:', ghResult.status, ghResult.message);
+        if (ghResult.status === 401) {
+          alert('Token do GitHub expirado ou inválido. Por favor, reconfigure seu token.');
+          document.getElementById('admin-github-modal')?.classList.remove('is-hidden');
+          document.getElementById('admin-github-modal')?.classList.add('is-open');
+        } else if (ghResult.status === 404) {
+          alert('Repositório não encontrado ou token sem permissão de escrita ("repo").');
+          document.getElementById('admin-github-modal')?.classList.remove('is-hidden');
+          document.getElementById('admin-github-modal')?.classList.add('is-open');
+        } else if (ghResult.status === 409) {
+          alert('Houve um conflito temporário de sincronização no GitHub (dois salvamentos simultâneos). Clique em "Salvar e Publicar" novamente para consolidar.');
+        } else {
+          alert(`Aviso ao publicar no GitHub (${ghResult.status}): ${ghResult.message || 'Verifique as permissões do token.'}`);
+        }
+        this.showToast('⚠️ Salvo localmente, mas falhou ao enviar para o GitHub.');
       }
     } catch (err) {
       console.warn('GitHub publish error:', err);
       this.showToast('✓ Salvo localmente! (GitHub offline)');
     } finally {
+      this.isSaving = false;
       if (saveBtn) {
         saveBtn.classList.remove('is-loading');
         saveBtn.disabled = false;
@@ -1359,6 +1374,9 @@ class KMAdminPanel {
   }
 
   setupGitHubSync() {
+    if (this._ghSyncDone) return;
+    this._ghSyncDone = true;
+
     const ghModal = document.getElementById('admin-github-modal');
     const ghConfigBtn = document.getElementById('admin-gh-config-btn');
     const ghModalClose = document.getElementById('admin-gh-modal-close');
@@ -1528,74 +1546,24 @@ class KMAdminPanel {
           const content = this.extractCurrentContent();
           content.updatedAt = new Date().toISOString();
 
-          // 1. Obter SHA atual do content.json no GitHub (se existir)
-          let currentSha = null;
-          try {
-            const checkRes = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}&_t=${Date.now()}`, {
-              headers: {
-                'Authorization': `Bearer ${cfg.token}`,
-                'Accept': 'application/vnd.github+json',
-                'X-GitHub-Api-Version': '2022-11-28'
-              }
-            });
-            if (checkRes.ok) {
-              const fileData = await checkRes.json();
-              currentSha = fileData.sha;
-            } else if (checkRes.status === 401) {
-              throw new Error('AUTH_EXPIRED');
-            }
-          } catch (err) {
-            if (err.message === 'AUTH_EXPIRED') throw err;
-          }
+          const ghResult = await this.publishToGitHub(content);
 
-          // 2. Converte o JSON para Base64 UTF-8
-          const jsonString = JSON.stringify(content, null, 2);
-          const base64Content = utf8ToBase64(jsonString);
-
-          // 3. Executa o PUT no GitHub Contents API
-          const payload = {
-            message: `cms: atualiza conteudo do site via painel administrativo [${new Date().toLocaleTimeString('pt-BR')}]`,
-            content: base64Content,
-            branch: cfg.branch || 'main'
-          };
-          if (currentSha) {
-            payload.sha = currentSha;
-          }
-
-          const putRes = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`, {
-            method: 'PUT',
-            headers: {
-              'Authorization': `Bearer ${cfg.token}`,
-              'Accept': 'application/vnd.github+json',
-              'Content-Type': 'application/json',
-              'X-GitHub-Api-Version': '2022-11-28'
-            },
-            body: JSON.stringify(payload)
-          });
-
-          if (putRes.ok) {
-            // Salva também localmente para manter sincronizado
+          if (ghResult.ok) {
             kmCMS.saveContent(content);
-
             this.showToast('🚀 Sucesso! Publicado no GitHub. O site oficial para todos os visitantes já está atualizado!');
+            closeModal();
           } else {
-            const errorJson = await putRes.json().catch(() => ({}));
-            if (putRes.status === 401) {
+            if (ghResult.status === 401) {
               alert('Token do GitHub inválido ou expirado. Por favor, reconfigure seu token.');
               openModal();
-            } else if (putRes.status === 409) {
-              alert('Houve um conflito de versão (alguém publicou alterações recentemente). Tente clicar em Publicar novamente.');
+            } else if (ghResult.status === 409) {
+              alert('Houve um conflito temporário de sincronização no GitHub (dois salvamentos simultâneos). Clique em Publicar novamente para consolidar.');
             } else {
-              alert(`Erro ao publicar no GitHub (${putRes.status}): ${errorJson.message || putRes.statusText}`);
+              alert(`Erro ao publicar no GitHub (${ghResult.status}): ${ghResult.message || 'Erro desconhecido'}`);
             }
           }
         } catch (err) {
-          if (err.message === 'AUTH_EXPIRED') {
-            alert('Token do GitHub expirado ou inválido. Por favor, reconfigure o token.');
-            openModal();
-          } else {
-            alert(`Falha ao comunicar com o GitHub: ${err.message}`);
-          }
+          alert(`Falha ao comunicar com o GitHub: ${err.message}`);
         } finally {
           ghPublishBtn.classList.remove('is-loading');
           ghPublishBtn.disabled = false;
@@ -1606,6 +1574,9 @@ class KMAdminPanel {
   }
 
   setupJSONBackup() {
+    if (this._jsonBackupDone) return;
+    this._jsonBackupDone = true;
+
     const exportBtn = document.getElementById('admin-export-btn');
     const importBtn = document.getElementById('admin-import-btn');
     const importFileInput = document.getElementById('admin-import-file');
