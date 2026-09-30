@@ -1208,6 +1208,33 @@ Detalhes: ${uploadErr.message}`);
     }
 
     this.updateVideoFeedback?.();
+
+    // Atualiza badge de status do token antes de abrir o modal
+    const ghStatusBadge = document.getElementById('admin-modal-gh-status');
+    if (ghStatusBadge) {
+      const cfg = getGitHubConfig();
+      if (cfg && cfg.token) {
+        ghStatusBadge.innerHTML = `
+          <div class="admin-gh-token-badge is-connected">
+            <span class="badge-dot"></span>
+            GitHub conectado &mdash; arquivos serão publicados e acessíveis em qualquer dispositivo
+          </div>`;
+      } else {
+        ghStatusBadge.innerHTML = `
+          <div class="admin-gh-token-badge is-disconnected">
+            <span class="badge-dot"></span>
+            Sem token GitHub &mdash; arquivos só aparecem neste dispositivo
+            <button type="button" class="badge-action" id="badge-gh-config-link">Configurar agora</button>
+          </div>`;
+        const configLink = ghStatusBadge.querySelector('#badge-gh-config-link');
+        if (configLink) {
+          configLink.addEventListener('click', () => {
+            document.getElementById('admin-gh-config-btn')?.click();
+          });
+        }
+      }
+    }
+
     this.mediaModal.classList.add('is-open');
   }
 

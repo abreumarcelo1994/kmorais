@@ -596,6 +596,72 @@ body.is-admin-mode .site-header {
   display: none !important;
 }
 
+/* Badge de status do Token GitHub no modal de mídia */
+#admin-modal-gh-status {
+  margin: 0 0 14px 0;
+  padding: 0;
+}
+
+.admin-gh-token-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 6px;
+  font: 700 10px var(--mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.admin-gh-token-badge.is-connected {
+  background: rgba(214, 238, 130, 0.1);
+  border-color: rgba(214, 238, 130, 0.35);
+  color: var(--lime);
+}
+
+.admin-gh-token-badge.is-connected .badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 0 8px var(--lime);
+  flex-shrink: 0;
+  animation: pulse-dot 1.8s infinite;
+}
+
+.admin-gh-token-badge.is-disconnected {
+  background: rgba(255, 190, 80, 0.1);
+  border-color: rgba(255, 190, 80, 0.35);
+  color: #ffbe50;
+}
+
+.admin-gh-token-badge.is-disconnected .badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ffbe50;
+  flex-shrink: 0;
+}
+
+.admin-gh-token-badge .badge-action {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  opacity: 0.8;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.admin-gh-token-badge .badge-action:hover {
+  opacity: 1;
+}
+
 .admin-modal-actions {
   display: flex;
   justify-content: flex-end;
