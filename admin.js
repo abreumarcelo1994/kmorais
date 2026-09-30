@@ -118,6 +118,93 @@ function getPortableMediaVal(primaryVal, fallbackIdbId) {
   return (primaryVal && !primaryVal.startsWith('blob:')) ? primaryVal : '';
 }
 
+/**
+ * Faz upload de um arquivo diretamente para o repositório do GitHub (pasta media/),
+ * retornando a URL pública do GitHub Pages que funciona em qualquer dispositivo.
+ * Retorna null se o token não estiver configurado.
+ */
+async function uploadFileToGitHub(file, onProgress) {
+  const cfg = getGitHubConfig();
+  if (!cfg || !cfg.token) return null;
+
+  if (onProgress) onProgress('Convertendo arquivo...');
+
+  // 1. Ler o arquivo como ArrayBuffer e converter para base64
+  const arrayBuffer = await file.arrayBuffer();
+  const uint8 = new Uint8Array(arrayBuffer);
+  let binary = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < uint8.length; i += chunkSize) {
+    binary += String.fromCharCode(...uint8.subarray(i, i + chunkSize));
+  }
+  const base64Content = btoa(binary);
+
+  // 2. Gerar nome único para o arquivo: media/timestamp_nome-sanitizado.ext
+  const safeName = file.name
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
+    .replace(/[^a-zA-Z0-9._-]/g, '_')                  // caracteres seguros
+    .toLowerCase();
+  const ts = Date.now();
+  const filePath = `media/${ts}_${safeName}`;
+
+  if (onProgress) onProgress('Enviando para o GitHub...');
+
+  // 3. Verificar se já existe (precisa do SHA para atualizar)
+  let existingSha = null;
+  try {
+    const checkRes = await fetch(
+      `https://api.github.com/repos/${cfg.repo}/contents/${filePath}?ref=${cfg.branch}&_t=${ts}`,
+      {
+        cache: 'no-store',
+        headers: {
+          'Authorization': `Bearer ${cfg.token}`,
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28'
+        }
+      }
+    );
+    if (checkRes.ok) {
+      const data = await checkRes.json();
+      existingSha = data.sha || null;
+    }
+  } catch (_) {}
+
+  // 4. Fazer o PUT para criar/atualizar o arquivo no repositório
+  const payload = {
+    message: `media: upload de midia via painel administrativo`,
+    content: base64Content,
+    branch: cfg.branch || 'main'
+  };
+  if (existingSha) payload.sha = existingSha;
+
+  const putRes = await fetch(
+    `https://api.github.com/repos/${cfg.repo}/contents/${filePath}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${cfg.token}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+        'X-GitHub-Api-Version': '2022-11-28'
+      },
+      body: JSON.stringify(payload)
+    }
+  );
+
+  if (!putRes.ok) {
+    const err = await putRes.json().catch(() => ({}));
+    throw new Error(`GitHub upload falhou (${putRes.status}): ${err.message || 'erro desconhecido'}`);
+  }
+
+  // 5. Montar URL pública do GitHub Pages
+  // Formato: https://{owner}.github.io/{repoName}/{filePath}
+  const [owner, repoName] = (cfg.repo || '').split('/');
+  const publicUrl = `https://${owner}.github.io/${repoName}/${filePath}`;
+
+  if (onProgress) onProgress('✓ Upload concluído!');
+  return publicUrl;
+}
+
 function formatFileSize(bytes) {
   if (!bytes || bytes === 0) return '0 B';
   const k = 1024;
@@ -781,6 +868,12 @@ class KMAdminPanel {
         saveBtn.disabled = true;
         saveBtn.textContent = 'Processando...';
 
+        // Helper: exibe mensagem de progresso na área de nome do arquivo no dropzone
+        const setProgress = (dropzoneNameId, msg) => {
+          const el = document.getElementById(dropzoneNameId);
+          if (el) el.textContent = msg;
+        };
+
         try {
           const videoGroup = document.getElementById('admin-modal-video-group');
           const posterGroup = document.getElementById('admin-modal-poster-group');
@@ -792,13 +885,43 @@ class KMAdminPanel {
           let finalVideoId = null;
 
           if (isVideoFileTab && this.selectedVideoFile) {
-            const mediaId = `idb:video_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-            await kmMediaStore.saveMedia(mediaId, this.selectedVideoFile, this.selectedVideoFile.type);
-            finalVideoUrl = URL.createObjectURL(this.selectedVideoFile);
-            finalVideoId = mediaId;
-            // Apaga vídeo antigo do banco se houver
-            if (this.currentEditingMedia.currentVideoId && this.currentEditingMedia.currentVideoId !== mediaId) {
-              await kmMediaStore.deleteMedia(this.currentEditingMedia.currentVideoId);
+            // Tenta fazer upload para o GitHub primeiro (URL pública para qualquer dispositivo)
+            try {
+              saveBtn.textContent = 'Enviando vídeo...';
+              const ghUrl = await uploadFileToGitHub(
+                this.selectedVideoFile,
+                (msg) => setProgress('video-file-name', msg)
+              );
+              if (ghUrl) {
+                finalVideoUrl = ghUrl;
+                finalVideoId = null; // URL pública não precisa de idb
+                // Limpa idb antigo se existia
+                if (this.currentEditingMedia.currentVideoId) {
+                  await kmMediaStore.deleteMedia(this.currentEditingMedia.currentVideoId).catch(() => {});
+                }
+              } else {
+                // Sem token GitHub: salva no IndexedDB como fallback local
+                const mediaId = `idb:video_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+                await kmMediaStore.saveMedia(mediaId, this.selectedVideoFile, this.selectedVideoFile.type);
+                finalVideoUrl = URL.createObjectURL(this.selectedVideoFile);
+                finalVideoId = mediaId;
+                if (this.currentEditingMedia.currentVideoId && this.currentEditingMedia.currentVideoId !== mediaId) {
+                  await kmMediaStore.deleteMedia(this.currentEditingMedia.currentVideoId).catch(() => {});
+                }
+              }
+            } catch (uploadErr) {
+              console.error('Erro no upload do vídeo para GitHub:', uploadErr);
+              // Fallback: IndexedDB local
+              const mediaId = `idb:video_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+              await kmMediaStore.saveMedia(mediaId, this.selectedVideoFile, this.selectedVideoFile.type);
+              finalVideoUrl = URL.createObjectURL(this.selectedVideoFile);
+              finalVideoId = mediaId;
+              if (this.currentEditingMedia.currentVideoId && this.currentEditingMedia.currentVideoId !== mediaId) {
+                await kmMediaStore.deleteMedia(this.currentEditingMedia.currentVideoId).catch(() => {});
+              }
+              alert(`Aviso: o vídeo foi salvo localmente, mas o upload para o GitHub falhou. Ele não aparecerá em outros dispositivos.
+
+Detalhes: ${uploadErr.message}`);
             }
           } else if (isVideoFileTab && this.currentEditingMedia.currentVideoId && !finalVideoUrl) {
             finalVideoId = this.currentEditingMedia.currentVideoId;
@@ -806,7 +929,7 @@ class KMAdminPanel {
           } else if (!isVideoFileTab) {
             // Se trocou para URL externa e antes tinha arquivo no banco, apaga do banco
             if (rawVideoUrl && this.currentEditingMedia.currentVideoId) {
-              await kmMediaStore.deleteMedia(this.currentEditingMedia.currentVideoId);
+              await kmMediaStore.deleteMedia(this.currentEditingMedia.currentVideoId).catch(() => {});
             }
             finalVideoId = null;
           }
@@ -816,14 +939,45 @@ class KMAdminPanel {
           let finalPosterId = null;
 
           if (isPosterFileTab && this.selectedPosterFile) {
-            const mediaId = `idb:img_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-            await kmMediaStore.saveMedia(mediaId, this.selectedPosterFile, this.selectedPosterFile.type);
-            const compressed = await compressImageFile(this.selectedPosterFile);
-            finalPosterUrl = compressed || URL.createObjectURL(this.selectedPosterFile);
-            finalPosterId = mediaId;
-            // Apaga foto antiga do banco se houver
-            if (this.currentEditingMedia.currentPosterId && this.currentEditingMedia.currentPosterId !== mediaId) {
-              await kmMediaStore.deleteMedia(this.currentEditingMedia.currentPosterId);
+            // Tenta fazer upload para o GitHub primeiro
+            try {
+              saveBtn.textContent = 'Enviando imagem...';
+              const ghUrl = await uploadFileToGitHub(
+                this.selectedPosterFile,
+                (msg) => setProgress('poster-file-name', msg)
+              );
+              if (ghUrl) {
+                finalPosterUrl = ghUrl;
+                finalPosterId = null; // URL pública não precisa de idb
+                // Limpa idb antigo se existia
+                if (this.currentEditingMedia.currentPosterId) {
+                  await kmMediaStore.deleteMedia(this.currentEditingMedia.currentPosterId).catch(() => {});
+                }
+              } else {
+                // Sem token GitHub: comprime e salva como base64 (funciona em todos dispositivos)
+                const compressed = await compressImageFile(this.selectedPosterFile);
+                finalPosterUrl = compressed || URL.createObjectURL(this.selectedPosterFile);
+                const mediaId = `idb:img_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+                await kmMediaStore.saveMedia(mediaId, this.selectedPosterFile, this.selectedPosterFile.type);
+                finalPosterId = mediaId;
+                if (this.currentEditingMedia.currentPosterId && this.currentEditingMedia.currentPosterId !== mediaId) {
+                  await kmMediaStore.deleteMedia(this.currentEditingMedia.currentPosterId).catch(() => {});
+                }
+              }
+            } catch (uploadErr) {
+              console.error('Erro no upload da imagem para GitHub:', uploadErr);
+              // Fallback: comprime para base64 (portável, sem dependência de dispositivo)
+              const compressed = await compressImageFile(this.selectedPosterFile);
+              finalPosterUrl = compressed || URL.createObjectURL(this.selectedPosterFile);
+              const mediaId = `idb:img_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+              await kmMediaStore.saveMedia(mediaId, this.selectedPosterFile, this.selectedPosterFile.type);
+              finalPosterId = mediaId;
+              if (this.currentEditingMedia.currentPosterId && this.currentEditingMedia.currentPosterId !== mediaId) {
+                await kmMediaStore.deleteMedia(this.currentEditingMedia.currentPosterId).catch(() => {});
+              }
+              alert(`Aviso: o upload para GitHub falhou. A imagem foi salva como base64 e ainda deve funcionar em outros dispositivos.
+
+Detalhes: ${uploadErr.message}`);
             }
           } else if (isPosterFileTab && this.currentEditingMedia.currentPosterId && !finalPosterUrl) {
             finalPosterId = this.currentEditingMedia.currentPosterId;
@@ -831,7 +985,7 @@ class KMAdminPanel {
           } else if (!isPosterFileTab) {
             // Se trocou para URL externa e antes tinha foto no banco, apaga do banco
             if (rawPosterUrl && this.currentEditingMedia.currentPosterId) {
-              await kmMediaStore.deleteMedia(this.currentEditingMedia.currentPosterId);
+              await kmMediaStore.deleteMedia(this.currentEditingMedia.currentPosterId).catch(() => {});
             }
             finalPosterId = null;
           }
