@@ -129,13 +129,13 @@ async function uploadFileToGitHub(file, onProgress) {
 
   if (onProgress) onProgress('Convertendo arquivo...');
 
-  // 1. Ler o arquivo como ArrayBuffer e converter para base64
+  // 1. Ler o arquivo como ArrayBuffer e converter para base64 com segurança
+  //    (NÃO usar spread ...uint8 em fromCharCode — estoura a pilha em arquivos maiores que ~64KB)
   const arrayBuffer = await file.arrayBuffer();
   const uint8 = new Uint8Array(arrayBuffer);
   let binary = '';
-  const chunkSize = 8192;
-  for (let i = 0; i < uint8.length; i += chunkSize) {
-    binary += String.fromCharCode(...uint8.subarray(i, i + chunkSize));
+  for (let i = 0; i < uint8.length; i++) {
+    binary += String.fromCharCode(uint8[i]);
   }
   const base64Content = btoa(binary);
 
@@ -924,13 +924,15 @@ class KMAdminPanel {
 Detalhes: ${uploadErr.message}`);
             }
           } else if (isVideoFileTab && this.currentEditingMedia.currentVideoId && !finalVideoUrl) {
+            // Aba arquivo ativa mas nenhum novo arquivo selecionado: mantém o existente
             finalVideoId = this.currentEditingMedia.currentVideoId;
             finalVideoUrl = await kmMediaStore.resolveUrl(finalVideoId);
+          } else if (!isVideoFileTab && rawVideoUrl && this.currentEditingMedia.currentVideoId) {
+            // Aba URL ativa E usuário preencheu uma URL nova: apaga o idb antigo
+            await kmMediaStore.deleteMedia(this.currentEditingMedia.currentVideoId).catch(() => {});
+            finalVideoId = null;
           } else if (!isVideoFileTab) {
-            // Se trocou para URL externa e antes tinha arquivo no banco, apaga do banco
-            if (rawVideoUrl && this.currentEditingMedia.currentVideoId) {
-              await kmMediaStore.deleteMedia(this.currentEditingMedia.currentVideoId).catch(() => {});
-            }
+            // Aba URL ativa mas sem URL nova: mantém o que estava (não apaga nada)
             finalVideoId = null;
           }
 
@@ -980,13 +982,15 @@ Detalhes: ${uploadErr.message}`);
 Detalhes: ${uploadErr.message}`);
             }
           } else if (isPosterFileTab && this.currentEditingMedia.currentPosterId && !finalPosterUrl) {
+            // Aba arquivo ativa mas nenhuma nova imagem selecionada: mantém a existente
             finalPosterId = this.currentEditingMedia.currentPosterId;
             finalPosterUrl = await kmMediaStore.resolveUrl(finalPosterId);
+          } else if (!isPosterFileTab && rawPosterUrl && this.currentEditingMedia.currentPosterId) {
+            // Aba URL ativa E usuário preencheu uma URL nova: apaga o idb antigo
+            await kmMediaStore.deleteMedia(this.currentEditingMedia.currentPosterId).catch(() => {});
+            finalPosterId = null;
           } else if (!isPosterFileTab) {
-            // Se trocou para URL externa e antes tinha foto no banco, apaga do banco
-            if (rawPosterUrl && this.currentEditingMedia.currentPosterId) {
-              await kmMediaStore.deleteMedia(this.currentEditingMedia.currentPosterId).catch(() => {});
-            }
+            // Aba URL ativa mas sem URL nova: mantém o que estava (não apaga nada)
             finalPosterId = null;
           }
 
