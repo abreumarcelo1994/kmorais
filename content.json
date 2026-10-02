@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-30T02:23:45.945Z",
+  "updatedAt": "2026-10-02T20:43:11.822Z",
   "hero": {
     "eyebrow": "KELLY MORAIS · CREATOR + MARKETING",
     "title": "Conteúdo que<br><em>parece conversa</em><br>e gera ação.",
@@ -76,17 +76,17 @@
       "label": "get ready with me"
     },
     {
-      "video": "https://res.cloudinary.com/demo/video/upload/q_auto,w_400/finish_line.mp4",
+      "video": "idb:video_1790973645999_waf0",
       "poster": "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=700&q=85&auto=format&fit=crop",
       "label": "unboxing & teste"
     },
     {
-      "video": "https://res.cloudinary.com/demo/video/upload/q_auto,w_400/dog.mp4",
+      "video": "https://abreumarcelo1994.github.io/kmorais/media/1790973685501_img_3455.mov",
       "poster": "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?w=700&q=85&auto=format&fit=crop",
       "label": "rotina de cuidados"
     },
     {
-      "video": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+      "video": "https://abreumarcelo1994.github.io/kmorais/media/1790973760792_img_3446.mov",
       "poster": "https://images.unsplash.com/photo-1612817288484-6f916006741a?w=700&q=85&auto=format&fit=crop",
       "label": "review sincera"
     },
