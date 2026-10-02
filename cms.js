@@ -504,7 +504,18 @@ class KMCMS {
           if (item.name) {
             pill.title = item.name;
             const nameSpan = circle.querySelector('.brand-name');
-            if (nameSpan) nameSpan.textContent = item.name;
+            if (nameSpan) {
+              const lower = item.name.toLowerCase().trim();
+              if (lower === 'fox cycles' || lower === 'fox') {
+                circle.innerHTML = '<span class="brand-name">FOX</span><small class="brand-sub">CYCLES</small>';
+              } else if (lower === 'mercado livre') {
+                circle.innerHTML = '<span class="brand-name">mercado<br>livre</span>';
+              } else if (lower === 'upseller erp' || lower === 'upseller') {
+                circle.innerHTML = '<span class="brand-name">UpSeller</span>';
+              } else {
+                nameSpan.textContent = item.name;
+              }
+            }
           }
 
           if (item.image && !item.image.startsWith('idb:')) {
@@ -586,10 +597,16 @@ class KMCMS {
           if (!cases[idx] || !item) return;
           const el = cases[idx];
           if (item.link) el.href = item.link;
-          const tag = el.querySelector('.real-case-content span');
+          const tag = el.querySelector('.case-platform-tag') || el.querySelector('.real-case-content span');
           const title = el.querySelector('.real-case-content h3');
           const desc = el.querySelector('.real-case-content p');
-          if (tag && item.tag) tag.innerHTML = sanitizeHtml(item.tag);
+          if (tag && item.tag) {
+            let icon = '🎬';
+            const cleanTag = sanitizeHtml(item.tag);
+            if (cleanTag.toLowerCase().includes('tiktok')) icon = '📱';
+            else if (cleanTag.toLowerCase().includes('collab')) icon = '🤝';
+            tag.innerHTML = `<span class="tag-icon" aria-hidden="true">${icon}</span> ${cleanTag}`;
+          }
           if (title && item.title) title.innerHTML = sanitizeHtml(item.title);
           if (desc && item.desc) desc.innerHTML = sanitizeHtml(item.desc);
 
