@@ -932,3 +932,342 @@ body.is-admin-mode .site-header {
 }
 
 
+/* ================================================================
+   KMORAIS ADMIN — VERSÃO MOBILE
+   Breakpoint: ≤ 768px
+   Desktop intacto acima de 769px.
+================================================================ */
+
+/* Botão hamburguer — escondido no desktop */
+.admin-mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: 1.5px solid rgba(214, 238, 130, 0.4);
+  color: var(--lime);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+
+.admin-mobile-menu-btn:hover,
+.admin-mobile-menu-btn.is-active {
+  background: rgba(214, 238, 130, 0.1);
+  border-color: var(--lime);
+}
+
+/* Drawer de ações mobile — painel que desliza de baixo */
+.admin-mobile-drawer {
+  display: none; /* controlado por JS — visível só em mobile */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: rgba(18, 24, 21, 0.98);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(214, 238, 130, 0.25);
+  border-radius: 18px 18px 0 0;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.5);
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.admin-mobile-drawer.is-open {
+  transform: translateY(0);
+}
+
+.admin-mobile-drawer-handle {
+  width: 36px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+
+.admin-mobile-drawer-title {
+  font: 700 10px var(--mono);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--lime);
+  margin-bottom: 16px;
+}
+
+.admin-mobile-drawer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.admin-mobile-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: #d0ddd6;
+  font: 700 10px var(--mono);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.admin-mobile-action-btn:active {
+  background: rgba(214, 238, 130, 0.12);
+  border-color: rgba(214, 238, 130, 0.4);
+  color: var(--lime);
+}
+
+.admin-mobile-action-btn.is-primary {
+  grid-column: 1 / -1;
+  background: var(--lime);
+  border-color: var(--lime);
+  color: var(--ink);
+  font-size: 12px;
+  padding: 18px;
+}
+
+.admin-mobile-action-btn.is-primary:active {
+  background: #e2ff94;
+}
+
+.admin-mobile-action-btn.is-danger {
+  border-color: rgba(235, 110, 75, 0.3);
+  color: var(--coral);
+}
+
+.admin-mobile-action-btn.is-danger:active {
+  background: rgba(235, 110, 75, 0.1);
+  border-color: var(--coral);
+}
+
+.admin-mobile-action-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* Overlay escuro atrás do drawer */
+.admin-mobile-drawer-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.admin-mobile-drawer-overlay.is-open {
+  opacity: 1;
+}
+
+/* Barra de ações rápidas fixada no rodapé (mobile) — sempre visível */
+.admin-mobile-fab {
+  display: none;
+  position: fixed;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  right: 20px;
+  z-index: 9997;
+  gap: 10px;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.admin-mobile-fab-save {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--lime);
+  color: var(--ink);
+  border: none;
+  border-radius: 28px;
+  padding: 14px 22px;
+  font: 800 12px var(--mono);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  cursor: pointer;
+  box-shadow: 0 6px 24px rgba(214, 238, 130, 0.45);
+  transition: transform 0.2s, box-shadow 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.admin-mobile-fab-save:active {
+  transform: scale(0.96);
+  box-shadow: 0 3px 12px rgba(214, 238, 130, 0.3);
+}
+
+@media (max-width: 768px) {
+
+  /* ---- Toolbar: compacta em mobile ---- */
+  .admin-toolbar {
+    padding: 10px 16px;
+  }
+
+  /* Esconde todas as ações da toolbar no mobile — ficam no drawer */
+  .admin-toolbar-actions {
+    display: none;
+  }
+
+  /* Mostra o botão hamburguer */
+  .admin-mobile-menu-btn {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Corpo com mais espaço no rodapé para o FAB */
+  body.is-admin-mode {
+    padding-top: 52px;
+    padding-bottom: 90px;
+  }
+
+  /* Drawer e FAB visíveis */
+  .admin-mobile-drawer {
+    display: block;
+  }
+
+  .admin-mobile-fab {
+    display: flex;
+  }
+
+  /* ---- Botões de edição de mídia: maiores e mais fáceis de tocar ---- */
+  .admin-edit-media-btn {
+    /* Sempre visível em mobile (sem hover) */
+    opacity: 1 !important;
+    padding: 10px 14px;
+    font-size: 11px;
+    border-radius: 22px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    /* Touch target mínimo 44px */
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Botão de editar marcas: sempre visível em mobile */
+  .admin-edit-brand-btn {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  /* ---- Modal: bottom sheet em mobile ---- */
+  .admin-modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+    background: rgba(18, 23, 21, 0.7);
+  }
+
+  .admin-modal-card {
+    max-width: 100%;
+    width: 100%;
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
+    max-height: 92dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* Animação de entrada de baixo */
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border: none;
+    border-top: 1px solid rgba(214, 238, 130, 0.2);
+  }
+
+  /* Handle visual para indicar que é arrastável */
+  .admin-modal-card::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+
+  .admin-modal-overlay.is-open .admin-modal-card {
+    transform: translateY(0);
+  }
+
+  /* Ações do modal: full-width em mobile */
+  .admin-modal-actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .admin-modal-actions .admin-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 14px;
+    font-size: 12px;
+  }
+
+  /* Botão salvar do modal maior */
+  #admin-modal-save {
+    min-height: 48px;
+  }
+
+  /* Tabs de Link vs PC: maiores em mobile */
+  .admin-tab-btn {
+    padding: 8px 14px;
+    font-size: 10px;
+  }
+
+  /* Inputs maiores para toque */
+  .admin-modal-group input,
+  .admin-modal-group textarea {
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+
+  /* ---- Modal do GitHub: também vira bottom sheet ---- */
+  .admin-github-modal-box {
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    border: none;
+    border-top: 1px solid rgba(214, 238, 130, 0.2);
+  }
+
+  /* ---- Toast: posição mobile ---- */
+  .admin-toast {
+    bottom: calc(100px + env(safe-area-inset-bottom));
+    right: 16px;
+    left: 16px;
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* ---- Tela de login: mais compacta ---- */
+  .admin-login-box {
+    padding: 28px 20px;
+  }
+
+  .admin-login-box h2 {
+    font-size: 22px;
+  }
+
+  /* ---- Grupo header dos campos: empilha em mobile ---- */
+  .admin-group-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  /* ---- Grid do GitHub: coluna única ---- */
+  .admin-gh-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -711,28 +711,97 @@ class KMAdminPanel {
       });
     }
 
-    if (resetBtn) {
-      resetBtn.addEventListener('click', () => {
-        if (confirm('Tem certeza que deseja restaurar os textos e vídeos padrões do site original?')) {
-          localStorage.removeItem(KM_CMS_STORAGE_KEY);
-          if (window.kmMediaStore?.cleanupOrphans) {
-            window.kmMediaStore.cleanupOrphans([]).finally(() => {
-              location.reload();
-            });
-            return;
-          }
-          location.reload();
+    const doReset = () => {
+      if (confirm('Tem certeza que deseja restaurar os textos e vídeos padrões do site original?')) {
+        localStorage.removeItem(KM_CMS_STORAGE_KEY);
+        if (window.kmMediaStore?.cleanupOrphans) {
+          window.kmMediaStore.cleanupOrphans([]).finally(() => {
+            location.reload();
+          });
+          return;
         }
-      });
-    }
-
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', () => {
-        sessionStorage.removeItem(AUTH_SESSION_KEY);
         location.reload();
+      }
+    };
+
+    const doLogout = () => {
+      sessionStorage.removeItem(AUTH_SESSION_KEY);
+      location.reload();
+    };
+
+    if (resetBtn) resetBtn.addEventListener('click', doReset);
+    if (logoutBtn) logoutBtn.addEventListener('click', doLogout);
+
+    // ── MOBILE: Drawer de ações ──────────────────────────────────────
+    const mobileMenuBtn = document.getElementById('admin-mobile-menu-btn');
+    const drawer = document.getElementById('admin-mobile-drawer');
+    const drawerOverlay = document.getElementById('admin-mobile-drawer-overlay');
+
+    const openDrawer = () => {
+      if (!drawer) return;
+      drawerOverlay?.style.setProperty('display', 'block');
+      requestAnimationFrame(() => {
+        drawer.classList.add('is-open');
+        drawerOverlay?.classList.add('is-open');
+        mobileMenuBtn?.classList.add('is-active');
       });
-    }
+    };
+
+    const closeDrawer = () => {
+      if (!drawer) return;
+      drawer.classList.remove('is-open');
+      drawerOverlay?.classList.remove('is-open');
+      mobileMenuBtn?.classList.remove('is-active');
+      setTimeout(() => {
+        if (!drawer.classList.contains('is-open')) {
+          drawerOverlay?.style.removeProperty('display');
+        }
+      }, 350);
+    };
+
+    mobileMenuBtn?.addEventListener('click', () => {
+      drawer?.classList.contains('is-open') ? closeDrawer() : openDrawer();
+    });
+
+    drawerOverlay?.addEventListener('click', closeDrawer);
+
+    // Botões dentro do drawer — delegam às mesmas ações do desktop
+    document.getElementById('admin-save-btn-mobile')?.addEventListener('click', () => {
+      closeDrawer();
+      this.saveAllChanges();
+    });
+
+    document.getElementById('admin-gh-config-btn-mobile')?.addEventListener('click', () => {
+      closeDrawer();
+      document.getElementById('admin-gh-config-btn')?.click();
+    });
+
+    document.getElementById('admin-export-btn-mobile')?.addEventListener('click', () => {
+      closeDrawer();
+      document.getElementById('admin-export-btn')?.click();
+    });
+
+    document.getElementById('admin-import-btn-mobile')?.addEventListener('click', () => {
+      closeDrawer();
+      document.getElementById('admin-import-btn')?.click();
+    });
+
+    document.getElementById('admin-reset-btn-mobile')?.addEventListener('click', () => {
+      closeDrawer();
+      setTimeout(doReset, 200); // Espera o drawer fechar antes do confirm()
+    });
+
+    document.getElementById('admin-logout-btn-mobile')?.addEventListener('click', () => {
+      closeDrawer();
+      setTimeout(doLogout, 200);
+    });
+
+    // FAB de salvar (sempre visível em mobile)
+    document.getElementById('admin-fab-save-btn')?.addEventListener('click', () => {
+      this.saveAllChanges();
+    });
   }
+
 
   setupMediaModal() {
     if (!this.mediaModal || this._mediaModalDone) return;

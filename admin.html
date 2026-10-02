@@ -44,7 +44,7 @@
   <!-- BARRA DE FERRAMENTAS DO ADMIN (TOOLBAR) -->
   <div class="admin-toolbar">
     <div class="admin-toolbar-left">
-      <span class="admin-status-tag"><span class="admin-status-dot"></span> Modo Edição Ativo</span>
+      <span class="admin-status-tag"><span class="admin-status-dot"></span> Modo Edição</span>
       <span class="admin-toolbar-hint">Clique nos textos para editar. Passe o mouse para trocar vídeos e fotos.</span>
     </div>
     <div class="admin-toolbar-actions">
@@ -57,6 +57,59 @@
       <button type="button" id="admin-reset-btn" class="admin-btn admin-btn-reset" title="Restaurar dados originais">&#8617; Restaurar</button>
       <button type="button" id="admin-logout-btn" class="admin-btn admin-btn-logout">Sair</button>
     </div>
+    <!-- Botão hamburguer (só aparece em mobile via CSS) -->
+    <button type="button" id="admin-mobile-menu-btn" class="admin-mobile-menu-btn" aria-label="Abrir menu de ações" title="Menu">&#9776;</button>
+  </div>
+
+  <!-- DRAWER MOBILE: painel de ações que desliza de baixo -->
+  <div id="admin-mobile-drawer-overlay" class="admin-mobile-drawer-overlay"></div>
+  <div id="admin-mobile-drawer" class="admin-mobile-drawer" aria-modal="true" role="dialog" aria-label="Menu de ações">
+    <div class="admin-mobile-drawer-handle"></div>
+    <div class="admin-mobile-drawer-title">Ações do Painel</div>
+    <div class="admin-mobile-drawer-grid">
+      <!-- Salvar: boaão em destaque -->
+      <button type="button" id="admin-save-btn-mobile" class="admin-mobile-action-btn is-primary">
+        <span class="admin-mobile-action-icon">&#128190;</span>
+        Salvar e Publicar
+      </button>
+      <!-- GitHub -->
+      <button type="button" id="admin-gh-config-btn-mobile" class="admin-mobile-action-btn">
+        <span class="admin-mobile-action-icon">&#9881;&#65039;</span>
+        GitHub
+      </button>
+      <!-- Ver site -->
+      <a href="index.html" target="_blank" class="admin-mobile-action-btn">
+        <span class="admin-mobile-action-icon">&#128065;</span>
+        Ver Site
+      </a>
+      <!-- Exportar -->
+      <button type="button" id="admin-export-btn-mobile" class="admin-mobile-action-btn">
+        <span class="admin-mobile-action-icon">&#128229;</span>
+        Exportar
+      </button>
+      <!-- Importar -->
+      <button type="button" id="admin-import-btn-mobile" class="admin-mobile-action-btn">
+        <span class="admin-mobile-action-icon">&#128228;</span>
+        Importar
+      </button>
+      <!-- Restaurar -->
+      <button type="button" id="admin-reset-btn-mobile" class="admin-mobile-action-btn is-danger">
+        <span class="admin-mobile-action-icon">&#8617;</span>
+        Restaurar
+      </button>
+      <!-- Sair -->
+      <button type="button" id="admin-logout-btn-mobile" class="admin-mobile-action-btn is-danger">
+        <span class="admin-mobile-action-icon">&#x1F6AA;</span>
+        Sair
+      </button>
+    </div>
+  </div>
+
+  <!-- FAB DE SALVAR (rodapé mobile, sempre visível) -->
+  <div class="admin-mobile-fab">
+    <button type="button" id="admin-fab-save-btn" class="admin-mobile-fab-save">
+      &#128190; Salvar e Publicar
+    </button>
   </div>
 
   <header class="site-header" id="topo">
