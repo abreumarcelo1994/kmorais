@@ -601,11 +601,7 @@ class KMCMS {
           const title = el.querySelector('.real-case-content h3');
           const desc = el.querySelector('.real-case-content p');
           if (tag && item.tag) {
-            let icon = '🎬';
-            const cleanTag = sanitizeHtml(item.tag);
-            if (cleanTag.toLowerCase().includes('tiktok')) icon = '📱';
-            else if (cleanTag.toLowerCase().includes('collab')) icon = '🤝';
-            tag.innerHTML = `<span class="tag-icon" aria-hidden="true">${icon}</span> ${cleanTag}`;
+            tag.innerHTML = sanitizeHtml(item.tag);
           }
           if (title && item.title) title.innerHTML = sanitizeHtml(item.title);
           if (desc && item.desc) desc.innerHTML = sanitizeHtml(item.desc);
