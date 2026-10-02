@@ -53,11 +53,55 @@
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"></noscript>
   <link rel="stylesheet" href="styles.css">
   <script>
-    /* Pré-aplicador instantâneo: executa de forma síncrona no head para sincronizar fotos/textos locais antes da pintura da tela */
+    /* Pré-aplicador instantâneo: executa de forma síncrona no head para eliminar FOIC (Flash of Old/Incorrect Content) */
     (function() {
       try {
         var raw = localStorage.getItem('kmorais_cms_content_v1');
-        if (raw) window.__KM_EARLY_CMS__ = JSON.parse(raw);
+        if (!raw) return;
+        var data = JSON.parse(raw);
+        window.__KM_EARLY_CMS__ = data;
+
+        /* Injeta atributos de imagem diretamente no HTML embutido antes da pintura.
+           Funciona porque scripts inline no <head> bloqueiam a renderização —
+           o navegador não pinta nada até este script terminar. */
+        var styles = [];
+
+        // Foto da Kelly (Seção Sobre)
+        var aboutImg = data.about && data.about.image;
+        if (aboutImg && !aboutImg.startsWith('idb:')) {
+          /* Usa CSS para sobrepor a imagem esttica via content trick no pseudo-elemento
+             Não é possível mudar src via CSS, então usamos opacity:0 no placeholder
+             e background-image no container até o JS aplicar corretamente. */
+          styles.push('.about-image img { opacity: 0 !important; transition: none !important; }');
+          styles.push('.about-image { background: url("' + aboutImg.replace(/"/g, '%22') + '") center/cover no-repeat; }');
+        }
+
+        // Cases Reais (capas de fundo)
+        var cases = data.realCases;
+        if (cases && cases.length) {
+          cases.forEach(function(c, i) {
+            if (c.cover && !c.cover.startsWith('idb:')) {
+              styles.push('.real-case:nth-child(' + (i + 1) + ') .real-case-cover { background-image: url("' + c.cover.replace(/"/g, '%22') + '") !important; }');
+            }
+          });
+        }
+
+        // Posts do Instagram
+        var posts = data.instagramPosts;
+        if (posts && posts.length) {
+          posts.forEach(function(p, i) {
+            if (p.image && !p.image.startsWith('idb:')) {
+              styles.push('.photo-card:nth-child(' + (i + 1) + ') img { content: url("' + p.image.replace(/"/g, '%22') + '"); }');
+            }
+          });
+        }
+
+        if (styles.length) {
+          var el = document.createElement('style');
+          el.id = 'km-foic-shield';
+          el.textContent = styles.join('\n');
+          document.head.appendChild(el);
+        }
       } catch(e) {}
     })();
   </script>

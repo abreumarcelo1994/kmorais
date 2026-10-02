@@ -380,6 +380,16 @@ class KMCMS {
       const publishedTimestamp = published.updatedAt ? new Date(published.updatedAt).getTime() : 0;
       const localTimestamp = localUpdatedAt ? Number(localUpdatedAt) : 0;
 
+      // Guarda de 15 segundos: se o localStorage foi salvo nos últimos 15s,
+      // o content.json do servidor pode ainda estar em cache/CDN desatualizado.
+      // Não sobrescrever para evitar FOIC (flash da imagem antiga após salvar).
+      const gracePeriodMs = 15000;
+      const localIsFresh = localTimestamp && (Date.now() - localTimestamp) < gracePeriodMs;
+      if (localIsFresh) {
+        console.log('[CMS] Dados locais recém-salvos (' + Math.round((Date.now() - localTimestamp) / 1000) + 's). Ignorando content.json para evitar FOIC.');
+        return published;
+      }
+
       // Se os dados publicados no GitHub forem mais recentes ou se o visitante não tiver nada local:
       if (!localSaved || (publishedTimestamp && publishedTimestamp > localTimestamp)) {
         this.data = deepMerge(defaultCMSContent, published);
@@ -387,6 +397,8 @@ class KMCMS {
         if (publishedTimestamp) {
           localStorage.setItem(KM_CMS_SYNC_KEY, String(publishedTimestamp));
         }
+        // Remove o escudo FOIC antes de aplicar o conteúdo remoto
+        document.getElementById('km-foic-shield')?.remove();
         await this.applyToPage();
       }
       return published;
@@ -398,6 +410,7 @@ class KMCMS {
       return null;
     }
   }
+
 
   exportJSON() {
     return JSON.stringify(this.data, null, 2);
@@ -836,8 +849,11 @@ if (typeof window !== 'undefined') {
 
 // Execução ao carregar no browser
 if (typeof document !== 'undefined') {
-  const boot = () => {
-    kmCMS?.applyToPage();
+  const boot = async () => {
+    await kmCMS?.applyToPage();
+    // Remove o escudo anti-FOIC: o applyToPage() já aplicou as URLs corretas,
+    // então o placeholder HTML estático já foi sobrescrito com segurança.
+    document.getElementById('km-foic-shield')?.remove();
     kmCMS?.fetchPublishedContent();
   };
 
