@@ -343,14 +343,14 @@
 
   <nav class="mobile-nav" id="mobile-nav" aria-label="Navegação mobile">
     <button class="mobile-nav-close" aria-label="Fechar menu">&#10005;</button>
-    <a href="#marcas">Marcas</a>
-    <a href="#trabalhos">Trabalhos</a>
-    <a href="#cases-reais">Cases</a>
-    <a href="#servicos">Serviços</a>
-    <a href="#sobre">Sobre</a>
-    <a href="#processo">Processo</a>
+    <a href="#marcas"><span class="nav-icon">✨</span> Marcas</a>
+    <a href="#trabalhos"><span class="nav-icon">🎬</span> Trabalhos</a>
+    <a href="#cases-reais"><span class="nav-icon">📈</span> Cases</a>
+    <a href="#servicos"><span class="nav-icon">🎯</span> Serviços</a>
+    <a href="#sobre"><span class="nav-icon">👋</span> Sobre</a>
+    <a href="#processo"><span class="nav-icon">📋</span> Processo</a>
     <div class="mobile-nav-cta">
-      <a href="#contato" data-open-contact>Vamos criar juntas &#8599;</a>
+      <a href="#contato" data-open-contact><span class="nav-icon">💬</span> Vamos criar juntas &#8599;</a>
     </div>
   </nav>
 
@@ -361,8 +361,8 @@
         <h1 id="hero-title">Conteúdo que<br><em>parece conversa</em><br>e gera ação.</h1>
         <p class="hero-text">UGC com a autenticidade de uma mãe real, a visão de quem fez marketing de e-commerce e o roteiro que uma campanha precisa para performar.</p>
         <div class="hero-actions">
-          <a class="button button-dark" href="#trabalhos">Ver meu trabalho <span aria-hidden="true">&#8595;</span></a>
-          <a class="text-link" href="#contato" data-open-contact>Falar sobre um projeto <span aria-hidden="true">&#8599;</span></a>
+          <a class="button button-dark hero-btn-main" href="#trabalhos"><span class="btn-emoji" aria-hidden="true">🎬</span> Ver meu trabalho <span aria-hidden="true">&#8595;</span></a>
+          <a class="text-link hero-btn-sub" href="#contato" data-open-contact><span class="btn-emoji" aria-hidden="true">💬</span> Falar sobre um projeto <span aria-hidden="true">&#8599;</span></a>
         </div>
       </div>
       <div class="hero-visual reveal reveal-delay">
@@ -374,7 +374,11 @@
           <div class="frame-label"><span class="pulse-dot"></span> gravando ideias</div>
         </div>
         <div class="hero-caption"><span>01</span> conteudo que<br>tem presenca</div>
-        <div class="hero-specs"><span>KM / 2026</span><span>UGC + DESIGN + ESTRATEGIA</span></div>
+        <div class="hero-specs">
+          <span class="hero-spec-pill"><span class="spec-icon">📍</span> São Paulo</span>
+          <span class="hero-spec-pill"><span class="spec-icon">🎬</span> Vídeos 9:16</span>
+          <span class="hero-spec-pill"><span class="spec-icon">⚡</span> Foco em Conversão</span>
+        </div>
       </div>
       <div class="hero-scroll"><span>rola pra ver</span><span class="scroll-line"></span></div>
     </section>
@@ -388,7 +392,12 @@
 
     <section class="agency-strip" aria-label="Resumo profissional">
       <div class="agency-strip-label"><span class="status-dot"></span> kelly morais / creator system</div>
-      <div class="agency-strip-items"><span>01 estrategia</span><span>02 roteiro</span><span>03 producao</span><span>04 conversao</span></div>
+      <div class="agency-strip-items">
+        <span class="strip-pill"><span class="strip-icon" aria-hidden="true">🎯</span> 01 Estratégia</span>
+        <span class="strip-pill"><span class="strip-icon" aria-hidden="true">✍️</span> 02 Roteiro</span>
+        <span class="strip-pill"><span class="strip-icon" aria-hidden="true">🎬</span> 03 Produção</span>
+        <span class="strip-pill"><span class="strip-icon" aria-hidden="true">📈</span> 04 Conversão</span>
+      </div>
       <div class="agency-strip-arrow" aria-hidden="true">&#8599;</div>
     </section>
 
@@ -483,13 +492,34 @@
       </div>
 
       <div class="filter-bar" aria-label="Filtrar trabalhos por nicho">
-        <button class="filter-button is-active" type="button" data-filter="todos">Todos</button>
-        <button class="filter-button" type="button" data-filter="automotivo">Automotivo</button>
-        <button class="filter-button" type="button" data-filter="tech">Tech</button>
-        <button class="filter-button" type="button" data-filter="casa">Casa &amp; Decor</button>
-        <button class="filter-button" type="button" data-filter="maternidade">Maternidade</button>
-        <button class="filter-button" type="button" data-filter="beleza">Beleza &amp; Autocuidado</button>
-        <button class="filter-button" type="button" data-filter="marketplace">Marketplace</button>
+        <button class="filter-button is-active" type="button" data-filter="todos">
+          <span class="filter-icon" aria-hidden="true">✨</span>
+          <span class="filter-text">Todos</span>
+        </button>
+        <button class="filter-button" type="button" data-filter="automotivo">
+          <span class="filter-icon" aria-hidden="true">🏎️</span>
+          <span class="filter-text">Automotivo</span>
+        </button>
+        <button class="filter-button" type="button" data-filter="tech">
+          <span class="filter-icon" aria-hidden="true">⚡</span>
+          <span class="filter-text">Tech</span>
+        </button>
+        <button class="filter-button" type="button" data-filter="casa">
+          <span class="filter-icon" aria-hidden="true">🏡</span>
+          <span class="filter-text">Casa &amp; Decor</span>
+        </button>
+        <button class="filter-button" type="button" data-filter="maternidade">
+          <span class="filter-icon" aria-hidden="true">🍼</span>
+          <span class="filter-text">Maternidade</span>
+        </button>
+        <button class="filter-button" type="button" data-filter="beleza">
+          <span class="filter-icon" aria-hidden="true">💄</span>
+          <span class="filter-text">Beleza</span>
+        </button>
+        <button class="filter-button" type="button" data-filter="marketplace">
+          <span class="filter-icon" aria-hidden="true">🛍️</span>
+          <span class="filter-text">Marketplace</span>
+        </button>
       </div>
 
       <div class="category-block reveal" data-category="automotivo" id="automotivo">
@@ -617,33 +647,57 @@
       </div>
       <div class="real-case-grid">
         <a class="real-case real-case-featured reveal" href="https://www.instagram.com/kemoraiso/reel/Dc4TsgNhvXy/" target="_blank" rel="noreferrer">
-          <div class="real-case-cover cover-one"></div><div class="real-case-content"><span>01 / Instagram Reel</span><h3>Conteudo com cara de rotina</h3><p>Para aproximar produto e audiencia sem perder naturalidade.</p><strong>ver conteudo &#8599;</strong></div>
+          <div class="real-case-cover cover-one"></div>
+          <div class="real-case-content">
+            <span class="case-platform-tag"><span class="tag-icon" aria-hidden="true">🎬</span> 01 / Instagram Reel</span>
+            <h3>Conteúdo com cara de rotina</h3>
+            <p>Para aproximar produto e audiência sem perder naturalidade.</p>
+            <strong class="case-action-btn"><span class="btn-icon" aria-hidden="true">▶</span> Ver conteúdo <span aria-hidden="true">&#8599;</span></strong>
+          </div>
         </a>
         <a class="real-case reveal" href="https://www.instagram.com/kemoraiso/reel/DdFP3quBgB9/" target="_blank" rel="noreferrer">
-          <div class="real-case-cover cover-two"></div><div class="real-case-content"><span>02 / Instagram Reel</span><h3>Creator + CLT</h3><p>A vida real como contexto para uma historia que conecta.</p><strong>ver conteudo &#8599;</strong></div>
+          <div class="real-case-cover cover-two"></div>
+          <div class="real-case-content">
+            <span class="case-platform-tag"><span class="tag-icon" aria-hidden="true">🎬</span> 02 / Instagram Reel</span>
+            <h3>Creator + CLT</h3>
+            <p>A vida real como contexto para uma história que conecta.</p>
+            <strong class="case-action-btn"><span class="btn-icon" aria-hidden="true">▶</span> Ver conteúdo <span aria-hidden="true">&#8599;</span></strong>
+          </div>
         </a>
         <a class="real-case reveal" href="https://www.instagram.com/foxcyclesoficial/reel/DUB0JGkkkR_/" target="_blank" rel="noreferrer">
-          <div class="real-case-cover cover-three"></div><div class="real-case-content"><span>03 / Collab de marca</span><h3>Conteudo para negocio real</h3><p>Quando a creator entra na conversa oficial da marca.</p><strong>ver conteudo &#8599;</strong></div>
+          <div class="real-case-cover cover-three"></div>
+          <div class="real-case-content">
+            <span class="case-platform-tag"><span class="tag-icon" aria-hidden="true">🤝</span> 03 / Collab de marca</span>
+            <h3>Conteúdo para negócio real</h3>
+            <p>Quando a creator entra na conversa oficial da marca.</p>
+            <strong class="case-action-btn"><span class="btn-icon" aria-hidden="true">▶</span> Ver conteúdo <span aria-hidden="true">&#8599;</span></strong>
+          </div>
         </a>
         <a class="real-case reveal" href="https://www.tiktok.com/@kellymoraiso" target="_blank" rel="noreferrer">
-          <div class="real-case-cover cover-four"></div><div class="real-case-content"><span>04 / TikTok</span><h3>Rotina, maternidade e dicas</h3><p>31K pessoas acompanhando conteudo que informa e acolhe.</p><strong>ver perfil &#8599;</strong></div>
+          <div class="real-case-cover cover-four"></div>
+          <div class="real-case-content">
+            <span class="case-platform-tag"><span class="tag-icon" aria-hidden="true">📱</span> 04 / TikTok</span>
+            <h3>Rotina, maternidade e dicas</h3>
+            <p>31K pessoas acompanhando conteúdo que informa e acolhe.</p>
+            <strong class="case-action-btn"><span class="btn-icon" aria-hidden="true">▶</span> Ver perfil <span aria-hidden="true">&#8599;</span></strong>
+          </div>
         </a>
       </div>
-      <div class="social-proof reveal"><span class="proof-label">presenca digital</span><strong>Instagram + TikTok</strong><span>um ecossistema para marcas que querem parecer humanas.</span></div>
+      <div class="social-proof reveal"><span class="proof-label">presença digital</span><strong>Instagram + TikTok</strong><span>um ecossistema para marcas que querem parecer humanas.</span></div>
     </section>
 
     <section class="latest-posts section-wrap" id="ultimos-posts" aria-labelledby="latest-posts-title">
       <div class="section-heading reveal">
         <div>
-          <p class="eyebrow"><span class="eyebrow-line"></span> diario visual</p>
-          <h2 id="latest-posts-title">O que esta<br><em>no ar agora.</em></h2>
+          <p class="eyebrow"><span class="eyebrow-line"></span> diário visual</p>
+          <h2 id="latest-posts-title">O que está<br><em>no ar agora.</em></h2>
         </div>
-        <p class="section-intro">Uma curadoria das publicacoes mais recentes do Instagram. Clique em qualquer foto para ver o post original.</p>
+        <p class="section-intro">Uma curadoria das publicações mais recentes do Instagram. Clique em qualquer foto para ver o post original.</p>
       </div>
       <div class="photo-carousel-shell">
         <button class="photo-carousel-button prev" type="button" aria-label="Ver fotos anteriores">&#8592;</button>
         <div class="photo-carousel" data-social-carousel aria-live="polite"></div>
-        <button class="photo-carousel-button next" type="button" aria-label="Ver proximas fotos">&#8594;</button>
+        <button class="photo-carousel-button next" type="button" aria-label="Ver próximas fotos">&#8594;</button>
       </div>
       <div class="photo-carousel-footer"><span>instagram / @kemoraiso</span><span class="progress-track"><i></i></span><a href="https://www.instagram.com/kemoraiso/" target="_blank" rel="noreferrer">ver perfil completo &#8599;</a></div>
     </section>
@@ -652,24 +706,78 @@
       <div class="section-heading reveal">
         <div>
           <p class="eyebrow"><span class="eyebrow-line"></span> formatos de entrega</p>
-          <h2 id="services-title">Conteudo para<br><em>cada objetivo.</em></h2>
+          <h2 id="services-title">Conteúdo para<br><em>cada objetivo.</em></h2>
         </div>
         <p class="section-intro">Escolha o formato ou misture tudo. Cada pacote pode ser adaptado ao momento da sua marca.</p>
       </div>
       <div class="service-grid">
-        <article class="service-card reveal"><span class="service-icon">01</span><h3>Videos para Ads</h3><p>Roteiro alinhado ao objetivo da campanha, com gancho, prova e CTA.</p><a href="#contato" data-open-contact>quero esse formato <span>&#8599;</span></a></article>
-        <article class="service-card reveal"><span class="service-icon">02</span><h3>Marketplace</h3><p>Videos curtos, diretos e demonstrativos para apresentar produtos e vender mais.</p><a href="#contato" data-open-contact>quero esse formato <span>&#8599;</span></a></article>
-        <article class="service-card reveal"><span class="service-icon">03</span><h3>Live Shop</h3><p>Conteudo nativo e demonstrativo para aproximar produto, creator e compra.</p><a href="#contato" data-open-contact>quero esse formato <span>&#8599;</span></a></article>
-        <article class="service-card reveal"><span class="service-icon">04</span><h3>Pacote para agencia</h3><p>Roteiros, variacoes de hook, gravacao e entregas organizadas para seus clientes.</p><a href="#contato" data-open-contact>quero esse formato <span>&#8599;</span></a></article>
+        <article class="service-card reveal">
+          <div class="service-card-top">
+            <span class="service-icon-badge" aria-hidden="true">🎯</span>
+            <span class="service-number">01</span>
+          </div>
+          <h3>Vídeos para Ads</h3>
+          <p>Roteiro alinhado ao objetivo da campanha, com gancho, prova social e CTA de alta conversão.</p>
+          <a class="service-btn" href="#contato" data-open-contact>Quero esse formato <span aria-hidden="true">&#8599;</span></a>
+        </article>
+        <article class="service-card reveal">
+          <div class="service-card-top">
+            <span class="service-icon-badge" aria-hidden="true">🛍️</span>
+            <span class="service-number">02</span>
+          </div>
+          <h3>Marketplace &amp; E-commerce</h3>
+          <p>Vídeos curtos, diretos e demonstrativos para apresentar produtos e vender mais no Mercado Livre, Shopee e Amazon.</p>
+          <a class="service-btn" href="#contato" data-open-contact>Quero esse formato <span aria-hidden="true">&#8599;</span></a>
+        </article>
+        <article class="service-card reveal">
+          <div class="service-card-top">
+            <span class="service-icon-badge" aria-hidden="true">🔴</span>
+            <span class="service-number">03</span>
+          </div>
+          <h3>Live Shop &amp; Commerce</h3>
+          <p>Apresentação ao vivo envolvente e demonstrativa para conectar público, creator e compra em tempo real.</p>
+          <a class="service-btn" href="#contato" data-open-contact>Quero esse formato <span aria-hidden="true">&#8599;</span></a>
+        </article>
+        <article class="service-card reveal">
+          <div class="service-card-top">
+            <span class="service-icon-badge" aria-hidden="true">📦</span>
+            <span class="service-number">04</span>
+          </div>
+          <h3>Pacote para Agências</h3>
+          <p>Roteiros estratégicos, variações de hook, gravação em alta definição e entregas organizadas para seus clientes.</p>
+          <a class="service-btn" href="#contato" data-open-contact>Quero esse formato <span aria-hidden="true">&#8599;</span></a>
+        </article>
       </div>
-      <div class="stats-row reveal"><div><strong>31k+</strong><span>seguidores no TikTok</span></div><div><strong>821k</strong><span>curtidas no TikTok</span></div><div><strong>818</strong><span>seguidores no Instagram</span></div></div>
+      <div class="stats-row reveal">
+        <div class="stat-pill">
+          <span class="stat-icon" aria-hidden="true">📱</span>
+          <div class="stat-content">
+            <strong>31k+</strong>
+            <span>seguidores no TikTok</span>
+          </div>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-icon" aria-hidden="true">❤️</span>
+          <div class="stat-content">
+            <strong>821k</strong>
+            <span>curtidas no TikTok</span>
+          </div>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-icon" aria-hidden="true">📸</span>
+          <div class="stat-content">
+            <strong>818</strong>
+            <span>seguidores no Instagram</span>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="agency-section section-wrap" id="agencias" aria-labelledby="agency-title">
       <div class="agency-panel reveal">
         <div class="agency-panel-number">03<span>/04</span></div>
-        <div><p class="eyebrow"><span class="eyebrow-line"></span> para agencias e times de marketing</p><h2 id="agency-title">Sua ideia chega.<br><em>Eu faco acontecer.</em></h2><p>Voce traz o briefing, eu entro com repertorio, roteiro, presenca em camera e uma entrega pronta para campanha. Um apoio criativo que entende prazo, objetivo e linguagem de marca.</p><a class="button button-light" href="#briefing" data-open-contact>Montar um briefing <span aria-hidden="true">&#8595;</span></a></div>
-        <div class="agency-list"><span>roteiro com hook</span><span>conteudo em escala</span><span>variacoes para teste</span><span>entrega organizada</span></div>
+        <div><p class="eyebrow"><span class="eyebrow-line"></span> para agências e times de marketing</p><h2 id="agency-title">Sua ideia chega.<br><em>Eu faço acontecer.</em></h2><p>Você traz o briefing, eu entro com repertório, roteiro, presença em câmera e uma entrega pronta para campanha. Um apoio criativo que entende prazo, objetivo e linguagem de marca.</p><a class="button button-light" href="#briefing" data-open-contact>Montar um briefing <span aria-hidden="true">&#8595;</span></a></div>
+        <div class="agency-list"><span>roteiro com hook</span><span>conteúdo em escala</span><span>variações para teste</span><span>entrega organizada</span></div>
       </div>
     </section>
 
@@ -690,9 +798,30 @@
         <p class="section-intro">Do roteiro à câmera. Do hook à entrega. Cada etapa pensada para gerar resultado real para a sua marca.</p>
       </div>
       <div class="process-grid">
-        <article class="process-step reveal"><span>01</span><h3>Briefing</h3><p>Entendo produto, publico e objetivo para criar uma ideia que faz sentido para a marca.</p></article>
-        <article class="process-step reveal"><span>02</span><h3>Roteiro</h3><p>Organizo a narrativa com hook, demonstracao e CTA no tom de uma conversa real.</p></article>
-        <article class="process-step reveal"><span>03</span><h3>Entrega</h3><p>Gravo, edito e entrego o conteudo pronto para publicar, com agilidade e cuidado.</p></article>
+        <article class="process-step reveal">
+          <div class="process-step-header">
+            <span class="process-icon" aria-hidden="true">📋</span>
+            <span class="process-number">01</span>
+          </div>
+          <h3>Briefing</h3>
+          <p>Entendo produto, público e objetivo para desenhar um ângulo certeiro para a marca.</p>
+        </article>
+        <article class="process-step reveal">
+          <div class="process-step-header">
+            <span class="process-icon" aria-hidden="true">✍️</span>
+            <span class="process-number">02</span>
+          </div>
+          <h3>Roteiro</h3>
+          <p>Organizo a narrativa com hook nos primeiros 3s, demonstração e CTA autêntico.</p>
+        </article>
+        <article class="process-step reveal">
+          <div class="process-step-header">
+            <span class="process-icon" aria-hidden="true">🎬</span>
+            <span class="process-number">03</span>
+          </div>
+          <h3>Entrega</h3>
+          <p>Gravo em alta definição, edito e entrego o conteúdo pronto para rodar nos anúncios.</p>
+        </article>
       </div>
     </section>
 
@@ -718,20 +847,30 @@
         </form>
       </div>
       <div class="contact-note-bar reveal">
-        <div class="contact-note-item">
-          <span>E-mail</span>
-          <a href="mailto:marketing.kellymorais@gmail.com">marketing.kellymorais@gmail.com</a>
-        </div>
-        <span class="note-sep">✦</span>
-        <div class="contact-note-item">
-          <span>WhatsApp</span>
-          <a href="https://wa.me/5511956367834" target="_blank" rel="noreferrer">+55 11 95636-7834</a>
-        </div>
-        <span class="note-sep">✦</span>
-        <div class="contact-note-item">
-          <span>Instagram</span>
-          <a href="https://www.instagram.com/kemoraiso" target="_blank" rel="noreferrer">@kemoraiso &#8599;</a>
-        </div>
+        <a class="contact-card-btn" href="https://wa.me/5511956367834?text=Oi%20Kelly%2C%20vim%20pelo%20seu%20portfolio%20e%20quero%20falar%20sobre%20um%20projeto." target="_blank" rel="noreferrer" aria-label="Conversar no WhatsApp">
+          <span class="contact-btn-icon" aria-hidden="true">💬</span>
+          <div class="contact-btn-text">
+            <span>Conversar no WhatsApp</span>
+            <strong>+55 11 95636-7834</strong>
+          </div>
+          <span class="contact-btn-arrow" aria-hidden="true">&#8599;</span>
+        </a>
+        <a class="contact-card-btn" href="mailto:marketing.kellymorais@gmail.com" aria-label="Enviar por E-mail">
+          <span class="contact-btn-icon" aria-hidden="true">✉️</span>
+          <div class="contact-btn-text">
+            <span>Enviar por E-mail</span>
+            <strong>marketing.kellymorais@gmail.com</strong>
+          </div>
+          <span class="contact-btn-arrow" aria-hidden="true">&#8599;</span>
+        </a>
+        <a class="contact-card-btn" href="https://www.instagram.com/kemoraiso" target="_blank" rel="noreferrer" aria-label="Acompanhar no Instagram">
+          <span class="contact-btn-icon" aria-hidden="true">📸</span>
+          <div class="contact-btn-text">
+            <span>Instagram Oficial</span>
+            <strong>@kemoraiso</strong>
+          </div>
+          <span class="contact-btn-arrow" aria-hidden="true">&#8599;</span>
+        </a>
       </div>
     </section>
   </main>
@@ -826,6 +965,22 @@
     </div>
     <p>&copy; 2026 KELLY MORAIS UGC</p>
   </footer>
+
+  <!-- BARRA DE ACESSO RÁPIDO FIXA NO MOBILE (Thumb-friendly WCAG) -->
+  <aside class="mobile-quick-bar" aria-label="Ações rápidas no celular">
+    <a class="mobile-bar-btn mobile-bar-whatsapp" href="https://wa.me/5511956367834?text=Oi%20Kelly%2C%20vim%20pelo%20seu%20portfolio%20e%20quero%20falar%20sobre%20um%20projeto." target="_blank" rel="noreferrer" aria-label="Falar no WhatsApp">
+      <span class="bar-icon" aria-hidden="true">💬</span>
+      <span class="bar-label">WhatsApp</span>
+    </a>
+    <a class="mobile-bar-btn mobile-bar-cta" href="#contato" data-open-contact aria-label="Pedir proposta ou briefing">
+      <span class="bar-icon" aria-hidden="true">⚡</span>
+      <span class="bar-label">Pedir Proposta</span>
+    </a>
+    <a class="mobile-bar-btn mobile-bar-cases" href="#trabalhos" aria-label="Ver vídeos do portfólio">
+      <span class="bar-icon" aria-hidden="true">🎬</span>
+      <span class="bar-label">Vídeos</span>
+    </a>
+  </aside>
 
   <script src="cms.js"></script>
   <script src="script.js"></script>

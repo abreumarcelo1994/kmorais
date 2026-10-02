@@ -27,6 +27,7 @@ O projeto foi construído sob uma arquitetura estática moderna (Jamstack) sem d
 - **CLS (Cumulative Layout Shift = 0.000)**: Reserva física estrita no DOM com `aspect-ratio` fixo em todos os 30 cards de vídeo (`9/16`), no hero frame (`4/5`) e imagens institucionais.
 - **INP & TBT (Total Blocking Time < 50ms)**: Carregamento assíncrono de fontes (`media="print" onload="this.media='all'"`) com fallbacks nativos do sistema operacional (`-apple-system, BlinkMacSystemFont, Segoe UI, Roboto`).
 - **Renderização Sob Demanda**: Seções fora do campo de visão utilizam `content-visibility: auto` com `contain-intrinsic-size` para não bloquear a thread principal de renderização.
+- **Acessibilidade Mobile Ergonomica (WCAG AAA)**: Otimização total para telas sensíveis ao toque (smartphones e tablets) com touch targets de 44-50px, tipografia proporcional de alto contraste, suporte a safe-area em aparelhos com notch/home indicator, barra fixa de ação rápida (Thumb Zone) e eliminação de auto-zoom em inputs no iOS Safari.
 
 ---
 
