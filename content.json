@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-10-02T20:43:11.822Z",
+  "updatedAt": "2026-10-02T20:45:58.288Z",
   "hero": {
     "eyebrow": "KELLY MORAIS · CREATOR + MARKETING",
     "title": "Conteúdo que<br><em>parece conversa</em><br>e gera ação.",
     "text": "UGC com a autenticidade de uma mãe real, a visão de quem fez marketing de e-commerce e o roteiro que uma campanha precisa para performar.",
     "sticker": "a vibe que<br><strong>para o scroll</strong>",
     "video": "https://abreumarcelo1994.github.io/kmorais/media/1790734992097_img_3479.mov",
-    "poster": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&q=85&auto=format&fit=crop"
+    "poster": "https://abreumarcelo1994.github.io/kmorais/media/1790973906008_img_3472.jpeg"
   },
   "brandsTitle": "Grandes marcas <em>confiam.</em>",
   "brandsList": [
@@ -76,7 +76,7 @@
       "label": "get ready with me"
     },
     {
-      "video": "idb:video_1790973645999_waf0",
+      "video": "",
       "poster": "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=700&q=85&auto=format&fit=crop",
       "label": "unboxing & teste"
     },
