@@ -14,12 +14,12 @@ const carousels = document.querySelectorAll('[data-carousel]');
 
 /* Covers de fallback — usados apenas quando o CMS não tem imagem configurada */
 const currentPortfolioCovers = [
-  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=360&q=70&auto=format&fit=crop&fm=webp',
-  'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=360&q=70&auto=format&fit=crop&fm=webp',
-  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=360&q=70&auto=format&fit=crop&fm=webp',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=360&q=70&auto=format&fit=crop&fm=webp',
-  'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=360&q=70&auto=format&fit=crop&fm=webp',
-  'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=360&q=70&auto=format&fit=crop&fm=webp'
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=360&q=60&auto=format&fit=crop&fm=webp',
+  'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=360&q=60&auto=format&fit=crop&fm=webp',
+  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=360&q=60&auto=format&fit=crop&fm=webp',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=360&q=60&auto=format&fit=crop&fm=webp',
+  'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=360&q=60&auto=format&fit=crop&fm=webp',
+  'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=360&q=60&auto=format&fit=crop&fm=webp'
 ];
 
 /* Vídeos de fallback para o portfólio */

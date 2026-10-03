@@ -133,8 +133,8 @@ function normalizeImageUrl(url) {
       u.searchParams.set('fit', 'crop');
       u.searchParams.set('fm', 'webp');
       const curQ = Number(u.searchParams.get('q'));
-      if (!curQ || curQ > 80) {
-        u.searchParams.set('q', '75');
+      if (!curQ || curQ > 65) {
+        u.searchParams.set('q', '60');
       }
       return u.toString();
     } catch (_) {
@@ -159,7 +159,7 @@ function normalizeImageUrl(url) {
  *   e convertidas para WebP a 80% de qualidade via Canvas HTML5.
  * - Retorna { file: File (webp), dataUrl: string, originalSize, newSize, isSvg }
  */
-function convertImageToWebp(file, maxWidth = 1280, quality = 0.8) {
+function convertImageToWebp(file, maxWidth = 800, quality = 0.72) {
   return new Promise((resolve, reject) => {
     if (!file || !file.type || !file.type.startsWith('image/')) {
       resolve(null);
@@ -203,9 +203,12 @@ function convertImageToWebp(file, maxWidth = 1280, quality = 0.8) {
 
         // 1. Gera Data URL em WebP
         let webpDataUrl = canvas.toDataURL('image/webp', quality);
-        if (!webpDataUrl.startsWith('data:image/webp')) {
+        const canWebp = webpDataUrl.startsWith('data:image/webp');
+        if (!canWebp) {
           webpDataUrl = canvas.toDataURL('image/jpeg', quality);
         }
+        const mimeType = canWebp ? 'image/webp' : 'image/jpeg';
+        const ext = canWebp ? '.webp' : '.jpg';
 
         // 2. Gera File/Blob em WebP
         canvas.toBlob((blob) => {
@@ -221,7 +224,7 @@ function convertImageToWebp(file, maxWidth = 1280, quality = 0.8) {
           }
 
           const baseName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9._-]/g, '_');
-          const webpFile = new File([blob], `${baseName}.webp`, { type: 'image/webp' });
+          const webpFile = new File([blob], `${baseName}${ext}`, { type: blob.type || mimeType });
           resolve({
             file: webpFile,
             dataUrl: webpDataUrl,
@@ -229,7 +232,7 @@ function convertImageToWebp(file, maxWidth = 1280, quality = 0.8) {
             newSize: blob.size,
             isSvg: false
           });
-        }, 'image/webp', quality);
+        }, mimeType, quality);
       };
       img.onerror = () => resolve({
         file,
@@ -275,7 +278,7 @@ async function uploadFileToGitHub(file, onProgress) {
   if (file && file.type && file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
     if (onProgress) onProgress('Otimizando imagem para WebP...');
     try {
-      const webpResult = await convertImageToWebp(file);
+      const webpResult = await convertImageToWebp(file, 600, 0.70);
       if (webpResult && webpResult.file) {
         file = webpResult.file;
       }
@@ -1144,7 +1147,7 @@ Detalhes: ${uploadErr.message}`);
                 }
               } else {
                 // Sem token GitHub: converte para WebP e salva como base64 (funciona em todos dispositivos)
-                const webpRes = await convertImageToWebp(this.selectedPosterFile);
+                const webpRes = await convertImageToWebp(this.selectedPosterFile, 600, 0.70);
                 finalPosterUrl = webpRes?.dataUrl || URL.createObjectURL(this.selectedPosterFile);
                 const mediaId = `idb:img_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
                 const fileToSave = webpRes?.file || this.selectedPosterFile;
@@ -1157,7 +1160,7 @@ Detalhes: ${uploadErr.message}`);
             } catch (uploadErr) {
               console.error('Erro no upload da imagem para GitHub:', uploadErr);
               // Fallback: comprime para base64 WebP (portável, sem dependência de dispositivo)
-              const webpRes = await convertImageToWebp(this.selectedPosterFile);
+              const webpRes = await convertImageToWebp(this.selectedPosterFile, 600, 0.70);
               finalPosterUrl = webpRes?.dataUrl || URL.createObjectURL(this.selectedPosterFile);
               const mediaId = `idb:img_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
               const fileToSave = webpRes?.file || this.selectedPosterFile;

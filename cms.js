@@ -57,8 +57,8 @@ function normalizeImageUrl(url, maxW) {
         u.searchParams.set('w', '360');
       }
       const curQ = Number(u.searchParams.get('q'));
-      if (!curQ || curQ > 75) {
-        u.searchParams.set('q', '70');
+      if (!curQ || curQ > 65) {
+        u.searchParams.set('q', '60');
       }
       return u.toString();
     } catch (_) {
@@ -112,7 +112,7 @@ const defaultCMSContent = {
     text: "UGC com a autenticidade de uma mãe real, a visão de quem fez marketing de e-commerce e o roteiro que uma campanha precisa para performar.",
     sticker: "a vibe que<br><strong>para o scroll</strong>",
     video: "https://res.cloudinary.com/demo/video/upload/q_auto,w_600/sea_turtle.mp4",
-    poster: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&q=75&auto=format&fit=crop&fm=webp"
+    poster: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&q=65&auto=format&fit=crop&fm=webp"
   },
   brandsTitle: "Grandes marcas <em>confiam.</em>",
   brandsList: [
@@ -145,7 +145,7 @@ const defaultCMSContent = {
     eyebrow: "quem está por trás",
     title: "A amiga que<br>seu público <em>estava procurando.</em>",
     bio: "Tenho 26 anos, moro em São Paulo e sou formada em Marketing. Sou mãe, trabalho no marketing de um e-commerce e crio conteúdo com uma linguagem leve, real e sem performar.",
-    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&q=75&auto=format&fit=crop&fm=webp"
+    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&q=65&auto=format&fit=crop&fm=webp"
   },
   contact: {
     title: "Tem uma ideia?<br><em>Vamos tirar do papel.</em>",
@@ -155,28 +155,28 @@ const defaultCMSContent = {
   },
   realCases: [
     {
-      cover: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=450&q=75&auto=format&fit=crop&fm=webp",
+      cover: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=450&q=65&auto=format&fit=crop&fm=webp",
       link: "https://www.instagram.com/kemoraiso/reel/Dc4TsgNhvXy/",
       tag: "01 / Instagram Reel",
       title: "Conteudo com cara de rotina",
       desc: "Para aproximar produto e audiencia sem perder naturalidade."
     },
     {
-      cover: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=450&q=75&auto=format&fit=crop&fm=webp",
+      cover: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=450&q=65&auto=format&fit=crop&fm=webp",
       link: "https://www.instagram.com/kemoraiso/reel/DdFP3quBgB9/",
       tag: "02 / Instagram Reel",
       title: "Creator + CLT",
       desc: "A vida real como contexto para uma historia que conecta."
     },
     {
-      cover: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=450&q=75&auto=format&fit=crop&fm=webp",
+      cover: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=450&q=65&auto=format&fit=crop&fm=webp",
       link: "https://www.instagram.com/foxcyclesoficial/reel/DUB0JGkkkR_/",
       tag: "03 / Collab de marca",
       title: "Conteudo para negocio real",
       desc: "Quando a creator entra na conversa oficial da marca."
     },
     {
-      cover: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=450&q=75&auto=format&fit=crop&fm=webp",
+      cover: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=450&q=65&auto=format&fit=crop&fm=webp",
       link: "https://www.tiktok.com/@kellymoraiso",
       tag: "04 / TikTok",
       title: "Rotina, maternidade e dicas",
