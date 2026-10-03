@@ -470,7 +470,7 @@ h1 em, h2 em { font-family: Georgia, serif; font-weight: 400; color: var(--coral
 .brand-secret { background: #4a777a; color: #ffffff; }
 .brand-secret .brand-name { font-family: Georgia, serif; font-size: 16px; font-style: italic; font-weight: 700; }
 
-.brand-upseller { background: #ff6a00; color: #ffffff; }
+.brand-upseller { background: #ff6a00; color: #111111; }
 .brand-upseller .brand-name { font-family: var(--display); font-size: 12px; font-weight: 800; letter-spacing: -.02em; }
 
 /* === CASES REAIS ============================================== */
