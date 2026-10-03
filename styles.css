@@ -1896,11 +1896,13 @@ body::before {
   place-items: center;
   padding: 20px;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity .25s ease;
+  transition: opacity .25s ease, visibility .25s ease;
 }
 .contact-modal.is-active {
   opacity: 1;
+  visibility: visible;
   pointer-events: all;
 }
 .contact-modal-backdrop {

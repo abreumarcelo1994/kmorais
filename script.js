@@ -695,6 +695,7 @@ const openModal = (modal) => {
   if (!modal) return;
   modal.classList.add('is-active');
   modal.setAttribute('aria-hidden', 'false');
+  modal.removeAttribute('inert');
   document.body.style.overflow = 'hidden';
 };
 
@@ -702,6 +703,7 @@ const closeModal = (modal) => {
   if (!modal) return;
   modal.classList.remove('is-active');
   modal.setAttribute('aria-hidden', 'true');
+  modal.setAttribute('inert', '');
   if (!document.querySelector('.contact-modal.is-active')) {
     document.body.style.overflow = '';
   }
