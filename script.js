@@ -410,11 +410,20 @@ if (socialCarousel) {
   const photoStep = () => Math.min(socialCarousel.clientWidth * 0.8, 500);
   photoShell.querySelector('.prev').addEventListener('click', () => socialCarousel.scrollBy({ left: -photoStep(), behavior: 'smooth' }));
   photoShell.querySelector('.next').addEventListener('click', () => socialCarousel.scrollBy({ left: photoStep(), behavior: 'smooth' }));
+  let socialScrollTicking = false;
   socialCarousel.addEventListener('scroll', () => {
-    const maxScroll = socialCarousel.scrollWidth - socialCarousel.clientWidth;
-    const progress = photoShell.nextElementSibling.querySelector('.progress-track i');
-    progress.style.width = `${maxScroll ? Math.max(24, (socialCarousel.scrollLeft / maxScroll) * 76 + 24) : 24}%`;
-  });
+    if (!socialScrollTicking) {
+      requestAnimationFrame(() => {
+        const maxScroll = socialCarousel.scrollWidth - socialCarousel.clientWidth;
+        const progress = photoShell.nextElementSibling.querySelector('.progress-track i');
+        if (progress) {
+          progress.style.width = `${maxScroll ? Math.max(24, (socialCarousel.scrollLeft / maxScroll) * 76 + 24) : 24}%`;
+        }
+        socialScrollTicking = false;
+      });
+      socialScrollTicking = true;
+    }
+  }, { passive: true });
   setupDragToScroll(socialCarousel, false);
 }
 
@@ -427,11 +436,21 @@ carousels.forEach((carousel) => {
 
   previous.addEventListener('click', () => carousel.scrollBy({ left: -step(), behavior: 'smooth' }));
   next.addEventListener('click', () => carousel.scrollBy({ left: step(), behavior: 'smooth' }));
+
+  let carouselScrollTicking = false;
   carousel.addEventListener('scroll', () => {
-    const maxScroll = carousel.scrollWidth - carousel.clientWidth;
-    const percentage = maxScroll ? Math.max(24, (carousel.scrollLeft / maxScroll) * 76 + 24) : 24;
-    progress.style.width = `${percentage}%`;
-  });
+    if (!carouselScrollTicking) {
+      requestAnimationFrame(() => {
+        const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+        const percentage = maxScroll ? Math.max(24, (carousel.scrollLeft / maxScroll) * 76 + 24) : 24;
+        if (progress) {
+          progress.style.width = `${percentage}%`;
+        }
+        carouselScrollTicking = false;
+      });
+      carouselScrollTicking = true;
+    }
+  }, { passive: true });
   setupDragToScroll(carousel, true);
 });
 
@@ -558,52 +577,60 @@ const categoryObserver = new IntersectionObserver((entries) => {
 }, { rootMargin: '-20% 0px -50% 0px', threshold: [0.1, 0.25, 0.5] });
 categoryBlocks.forEach((category) => categoryObserver.observe(category));
 
-/* === HEADER FIXO COM CONTROLE DE VISIBILIDADE ==================
-   - Fixo ao rolar a página.
+/* === HEADER FIXO COM CONTROLE DE VISIBILIDADE (ZERO FORCED REFLOW) =
+   - Utiliza IntersectionObserver assíncrono para eliminar 100% de reflows forçados (layout thrashing).
    - Some quando o menu de filtros (.filter-bar) estiver fixado no topo.
    - Some quando chegar na última dobra da página (seção #contato e rodapé).
    ============================================================= */
 const siteHeader = document.querySelector('.site-header');
 const portfolioSection = document.querySelector('#trabalhos');
+const portfolioHeading = document.querySelector('#trabalhos .section-heading');
 const contactSection = document.querySelector('#contato');
 
-let headerScrollTicking = false;
+let isHeadingPastTop = false;
+let isPortfolioInView = false;
+let isLastFold = false;
 
-function updateHeaderVisibility() {
+function syncHeaderVisibility() {
   if (!siteHeader) return;
-
-  // 1. Menu de filtros fixo no topo:
-  let isFilterSticky = false;
-  if (filterBar && portfolioSection) {
-    const filterRect = filterBar.getBoundingClientRect();
-    const portfolioRect = portfolioSection.getBoundingClientRect();
-    isFilterSticky = filterRect.top <= 75 && portfolioRect.bottom > 80;
-  }
-
-  // 2. Última dobra da página (Contato e Rodapé):
-  let isLastFold = false;
-  if (contactSection) {
-    const contactRect = contactSection.getBoundingClientRect();
-    isLastFold = contactRect.top <= 120;
-  }
-
+  const isFilterSticky = isHeadingPastTop && isPortfolioInView;
   const shouldHideHeader = isFilterSticky || isLastFold;
   siteHeader.classList.toggle('is-hidden-header', shouldHideHeader);
   siteHeader.classList.toggle('header-hidden', shouldHideHeader);
 }
 
-window.addEventListener('scroll', () => {
-  if (!headerScrollTicking) {
-    requestAnimationFrame(() => {
-      updateHeaderVisibility();
-      headerScrollTicking = false;
+// 1. Observador do cabeçalho do portfólio (detecta quando o usuário rolou além do título e chegou nos filtros)
+if (portfolioHeading) {
+  const headingObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      isHeadingPastTop = !entry.isIntersecting && entry.boundingClientRect.top < 70;
+      syncHeaderVisibility();
     });
-    headerScrollTicking = true;
-  }
-}, { passive: true });
+  }, { rootMargin: '-70px 0px 0px 0px', threshold: 0 });
+  headingObserver.observe(portfolioHeading);
+}
 
-window.addEventListener('resize', updateHeaderVisibility, { passive: true });
-updateHeaderVisibility();
+// 2. Observador da seção de portfólio como um todo (detecta quando a vitrine de vídeos está na tela)
+if (portfolioSection) {
+  const portfolioObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      isPortfolioInView = entry.isIntersecting;
+      syncHeaderVisibility();
+    });
+  }, { rootMargin: '-70px 0px 0px 0px', threshold: 0 });
+  portfolioObserver.observe(portfolioSection);
+}
+
+// 3. Observador da última dobra (seção #contato e rodapé)
+if (contactSection) {
+  const contactObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      isLastFold = entry.isIntersecting;
+      syncHeaderVisibility();
+    });
+  }, { rootMargin: '0px 0px -15% 0px', threshold: 0 });
+  contactObserver.observe(contactSection);
+}
 
 /* === FORMULÁRIO — Web3Forms ====================================
    Os e-mails chegam direto no Gmail da Kelly via Web3Forms.
