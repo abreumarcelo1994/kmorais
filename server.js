@@ -61,7 +61,9 @@ function serveFile(req, res, filePath) {
       'Content-Type': contentType,
       'Content-Length': totalSize,
       'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Access-Control-Allow-Origin': req.headers.origin || '*'
+      'Access-Control-Allow-Origin': req.headers.origin || '*',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'SAMEORIGIN'
     });
 
     const stream = fs.createReadStream(filePath);
