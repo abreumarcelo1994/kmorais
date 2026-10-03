@@ -4,7 +4,7 @@
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
   <url>
     <loc>https://kellymorais.com.br/</loc>
-    <lastmod>2026-10-03T20:45:00-03:00</lastmod>
+    <lastmod>2026-10-03T20:55:00-03:00</lastmod>
 
     <!-- ============================================================== -->
     <!-- 1. IMAGENS OFICIAIS (GOOGLE IMAGENS / GOOGLE LENS)            -->
@@ -35,7 +35,7 @@
     <!-- ============================================================== -->
     <!-- Destaque 01: Hero Reel de Apresentação -->
     <video:video>
-      <video:thumbnail_loc>https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&amp;q=85&amp;auto=format&amp;fit=crop</video:thumbnail_loc>
+      <video:thumbnail_loc>https://kellymorais.com.br/media/hero_poster.webp</video:thumbnail_loc>
       <video:title>Kelly Morais | UGC Creator para Marcas e E-commerce</video:title>
       <video:description>Vídeos autênticos com estética nativa de redes sociais, ganchos de retenção nos primeiros 3 segundos e roteiro voltado à conversão em campanhas pagas.</video:description>
       <video:content_loc>https://res.cloudinary.com/demo/video/upload/q_auto,w_600/sea_turtle.mp4</video:content_loc>

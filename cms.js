@@ -111,8 +111,8 @@ const defaultCMSContent = {
     title: "Conteúdo que<br><em>parece conversa</em><br>e gera ação.",
     text: "UGC com a autenticidade de uma mãe real, a visão de quem fez marketing de e-commerce e o roteiro que uma campanha precisa para performar.",
     sticker: "a vibe que<br><strong>para o scroll</strong>",
-    video: "https://res.cloudinary.com/demo/video/upload/q_auto,w_600/sea_turtle.mp4",
-    poster: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&q=65&auto=format&fit=crop&fm=webp"
+    video: "",
+    poster: "https://kellymorais.com.br/media/hero_poster.webp"
   },
   brandsTitle: "Grandes marcas <em>confiam.</em>",
   brandsList: [

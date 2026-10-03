@@ -266,19 +266,15 @@ if (heroVideo && heroFrame) {
   heroVideo.playsInline = true;
   attachSoundButton(heroFrame, heroVideo);
 
-  const heroSource = heroVideo.querySelector('source');
-  if (!heroSource || !heroSource.src || heroSource.src.includes('coverr-main')) {
-    const defHero = 'https://res.cloudinary.com/demo/video/upload/q_auto,w_600/sea_turtle.mp4';
-    if (heroSource) heroSource.src = defHero;
-    heroVideo.src = defHero;
-    heroVideo.load();
-    heroVideo.play().catch(() => {});
-  }
-
-  // Clique em qualquer canto do Hero dá play/pause
+  // Clique em qualquer canto do Hero dá play/pause sob demanda (Zero desperdício de banda inicial)
   heroFrame.style.cursor = 'pointer';
   heroFrame.addEventListener('click', (e) => {
     if (e.target.closest('.video-sound-control') || e.target.closest('.video-sound-btn') || e.target.closest('.admin-edit-media-btn')) return;
+    if (!heroVideo.src && heroVideo.dataset.src) {
+      heroVideo.src = heroVideo.dataset.src;
+      heroVideo.load();
+    }
+    if (!heroVideo.src) return;
     if (heroVideo.paused) {
       document.querySelectorAll('.video-card video').forEach(v => { if (!v.paused) v.pause(); });
       heroVideo.play().then(() => showPlayPulse(heroFrame, true)).catch(() => {});
