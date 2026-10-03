@@ -2,7 +2,7 @@
   "name": "Kelly Morais UGC | Portfólio & Criadora",
   "short_name": "Kelly Morais",
   "description": "Portfólio oficial de vídeos UGC, anúncios e campanhas de Kelly Morais para marcas e agências.",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",

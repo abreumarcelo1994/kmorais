@@ -2,6 +2,17 @@
  * KMORAIS - Painel de Controle Administrativo (In-Place Editor)
  */
 
+// Clean URLs: remove .html da barra de navegação mantendo rota /admin elegante
+(function cleanUrl() {
+  if (window.history && window.history.replaceState) {
+    var p = window.location.pathname;
+    if (p.endsWith('.html')) {
+      var c = p.replace(/\.html$/, '');
+      window.history.replaceState(null, '', c + window.location.search + window.location.hash);
+    }
+  }
+})();
+
 // Hash SHA-256 com salt da senha de acesso — impossibilita busca reversa via rainbow tables.
 const ADMIN_PASSWORD_HASH = '8243a0708a330f94d01a004351968dfb8a8254ff11aa2abfb32faff04864a92a';
 const ADMIN_SALT = ':km_salt_v2_9f8b2c';

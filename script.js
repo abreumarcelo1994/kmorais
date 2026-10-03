@@ -1,3 +1,15 @@
+// Clean URLs: remove .html da barra de navegação para estética moderna
+(function cleanUrl() {
+  if (window.history && window.history.replaceState) {
+    var p = window.location.pathname;
+    if (p.endsWith('.html')) {
+      var c = p.replace(/index\.html$/, '').replace(/\.html$/, '');
+      if (!c) c = '/';
+      window.history.replaceState(null, '', c + window.location.search + window.location.hash);
+    }
+  }
+})();
+
 const carousels = document.querySelectorAll('[data-carousel]');
 
 /* Covers de fallback — usados apenas quando o CMS não tem imagem configurada */

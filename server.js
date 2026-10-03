@@ -136,11 +136,16 @@ const server = http.createServer((req, res) => {
   }
 
   // Prevenção de Path Traversal
-  const safePath = path.normalize(path.join(BASE_DIR, pathname));
+  let safePath = path.normalize(path.join(BASE_DIR, pathname));
   if (!safePath.startsWith(BASE_DIR)) {
     res.writeHead(403, { 'Content-Type': 'text/plain' });
     res.end('403 Forbidden');
     return;
+  }
+
+  // Suporte a Clean URLs (ex: /admin -> admin.html)
+  if (!fs.existsSync(safePath) && fs.existsSync(safePath + '.html')) {
+    safePath += '.html';
   }
 
   serveFile(req, res, safePath);
