@@ -1,63 +1,47 @@
 # Kelly Morais — UGC Creator & Marketing Portfolio
 
-> Portfólio oficial de Kelly Morais: criadora UGC (User Generated Content) e estrategista de marketing de e-commerce sediada em São Paulo, Brasil.
+> Portfólio oficial de Kelly Morais: criadora UGC (User Generated Content) e estrategista de marketing de e-commerce em São Paulo, Brasil. Vídeos autênticos para marcas e anúncios que parecem conversa e geram conversão de vendas.
 
-## Sobre a Criadora
-- **Nome**: Kelly Morais
-- **Perfil**: 26 anos, mãe real, formada em Marketing, profissional atuante no marketing de e-commerce.
-- **Localização**: São Paulo, SP — Brasil (atendimento nacional com gravação remota ou presencial e envio de produtos).
-- **Conceito & Proposta**: "Conteúdo que parece conversa e gera ação." Criação de vídeos autênticos que quebram o padrão de anúncio corporativo frio, focados em retenção nos primeiros 3 segundos (hook forte), identificação imediata e conversão de vendas para marcas e agências.
+## Navegação Principal do Site
+- [Página Inicial](https://kellymorais.com.br/): Apresentação institucional de Kelly Morais, proposta de valor e cases de sucesso.
+- [Vitrine de Vídeos por Nicho](https://kellymorais.com.br/#trabalhos): Vitrine interativa com 30 vídeos categorizados em Automotivo, Tech, Casa & Decor, Maternidade, Beleza & Autocuidado e Marketplace.
+- [Cases Reais Publicados](https://kellymorais.com.br/#cases-reais): Seleção de conteúdos reais veiculados com métricas no Instagram Reels e TikTok.
+- [Sobre a Criadora](https://kellymorais.com.br/#sobre): Biografia profissional, trajetória acadêmica em Marketing e vivência no marketing de e-commerce.
+- [Formatos e Serviços](https://kellymorais.com.br/#servicos): Modelos de contratação para marcas e agências (Vídeos para Ads, Marketplace, Live Commerce e Pacotes para Agências).
+- [Orçamentos e Parcerias](https://kellymorais.com.br/#contato): Canal direto para solicitação de propostas e envio de briefings comerciais.
 
-## Especialidades & Serviços Oferecidos
-1. **Vídeos para Anúncios Pagos (Meta Ads & TikTok Ads)**:
-   - Ganchos fortes (hooks) para parar o scroll.
-   - Formatos: Unboxing, teste de produto, rotina real, problema vs. solução, quebra de objeções e depoimento sincero.
-   - Entregas em formato vertical 9:16 em alta definição (4K/60fps), com variações de ganchos para testes A/B de tráfego pago.
-2. **Vídeos para E-commerce & Marketplaces**:
-   - Vídeos demonstrativos para páginas de produto no Mercado Livre, Shopee, Amazon e e-commerces proprietários.
-3. **Live Shop & Live Commerce**:
-   - Apresentação de produtos ao vivo, dinamismo, engajamento e incentivo à compra imediata com cupons e ofertas.
-4. **Pacotes Mensais para Agências de Performance**:
-   - Contratos recorrentes com lote de vídeos mensais, alinhamento ágil de roteiro e previsibilidade de entrega para múltiplos clientes.
+## Redes Oficiais e Contato
+- [WhatsApp Comercial](https://wa.me/5511956367834): Atendimento comercial direto para orçamentos rápidos e agendamento de gravações.
+- [E-mail Corporativo](mailto:marketing.kellymorais@gmail.com): Contato oficial para recebimento de contratos, propostas e briefings detalhados de marcas e agências.
+- [Instagram Oficial (@kemoraiso)](https://www.instagram.com/kemoraiso/): Perfil oficial com Reels de rotina, lifestyle, collabs de marca e transição capilar.
+- [TikTok Oficial (@kellymoraiso)](https://www.tiktok.com/@kellymoraiso): Comunidade com mais de 31 mil seguidores com foco em maternidade real e consumo consciente.
 
-## Marcas Atendidas
-- Dove (Beleza & Cuidados Pessoais)
-- FOX Cycles (Automotivo & Mobilidade)
-- Seda (Capilar & Beleza)
-- Kibon (Alimentos & Sorvetes)
-- Omo (Cuidados com a Casa)
-- Avon (Cosméticos & Maquiagem)
-- Kopenhagen (Chocolates & Alimentos Finos)
-- Cif (Limpeza & Casa)
-- Pantene (Cabelos & Tratamento)
-- Eudora (Perfumaria & Beleza)
-- Mercado Livre (Marketplace & E-commerce)
-- Sensodyne (Higiene Bucal & Saúde)
-- Secret (Desodorantes & Autocuidado)
-- UpSeller ERP (Tecnologia & Softwares para Vendas Online)
+## Serviços e Modelos de Entrega
+- [Vídeos para Meta Ads e TikTok Ads](https://kellymorais.com.br/#servicos): Roteiros com ganchos fortes nos primeiros 3 segundos para reter atenção e maximizar ROAS em campanhas pagas.
+- [Vídeos para E-commerce e Marketplaces](https://kellymorais.com.br/#servicos): Demonstrações práticas de produto em uso para páginas no Mercado Livre, Shopee e Amazon.
+- [Live Shop e Live Commerce](https://kellymorais.com.br/#servicos): Transmissões ao vivo focadas em conversão imediata, quebra de objeções e incentivo com cupons.
+- [Pacotes Mensais para Agências](https://kellymorais.com.br/#servicos): Fornecimento contínuo de variações de hooks e gravações em lote com previsibilidade de entrega.
 
-## Nichos de Atuação
-- Beleza, Skincare & Autocuidado
-- Maternidade, Família & Rotina Real
-- Casa, Decoração & Limpeza
-- Tecnologia, Ferramentas & Softwares para E-commerce
-- Automotivo, Mobilidade & Acessórios
-- Moda, Vestuário & Estilo
+## Marcas Atendidas no Portfólio
+- [Case Dove](https://kellymorais.com.br/#trabalhos): Conteúdo voltado a cuidados pessoais, pele e hidratação.
+- [Case FOX Cycles](https://www.instagram.com/foxcyclesoficial/reel/DUB0JGkkkR_/): Colaboração e campanha institucional para a marca automotiva e de mobilidade.
+- [Case Seda](https://kellymorais.com.br/#trabalhos): Vídeos demonstrativos para cuidados capilares e rotina.
+- [Case Kibon](https://kellymorais.com.br/#trabalhos): Conteúdo sensorial para alimentos e sobremesas.
+- [Case Omo](https://kellymorais.com.br/#trabalhos): Demonstrações de produto e rotina doméstica para cuidados com a casa.
+- [Case Avon](https://kellymorais.com.br/#trabalhos): Unboxing e tutoriais de maquiagem e cosméticos.
+- [Case Kopenhagen](https://kellymorais.com.br/#trabalhos): Conteúdos para datas comemorativas e produtos premium.
+- [Case Cif](https://kellymorais.com.br/#trabalhos): Teste prático de limpeza pesada com narrativa problema versus solução.
+- [Case Pantene](https://kellymorais.com.br/#trabalhos): Reviews de tratamentos capilares e cronograma capilar.
+- [Case Eudora](https://kellymorais.com.br/#trabalhos): Campanhas de perfumaria e cosméticos finos.
+- [Case Mercado Livre](https://kellymorais.com.br/#trabalhos): Demonstrações dinâmicas para marketplace e e-commerce.
+- [Case Sensodyne](https://kellymorais.com.br/#trabalhos): Conteúdos informativos de saúde bucal e rotina.
+- [Case Secret](https://kellymorais.com.br/#trabalhos): Review sincera de autocuidado e alta proteção.
+- [Case UpSeller ERP](https://kellymorais.com.br/#trabalhos): Conteúdo explicativo de softwares e tecnologia para vendas online.
 
-## Fluxo de Trabalho (Do Briefing ao Post)
-1. **Briefing**: Alinhamento do objetivo da campanha, personas e diferenciais do produto.
-2. **Roteiro & Estratégia**: Estrutura com gancho, desenvolvimento dinâmico e CTA claro, validado previamente.
-3. **Gravação & Edição**: Captação profissional, áudio nítido, cortes dinâmicos e legendas sincronizadas.
-4. **Entrega & Ajustes**: Arquivos finais prontos para uso em tráfego pago ou post orgânico.
+## Metadados e Recursos Técnicos
+- [Sitemap Oficial (XML)](https://kellymorais.com.br/sitemap.xml): Mapa canônico do site estruturado segundo o protocolo Google Vídeos e Imagens.
+- [Diretrizes de Rastreamento (robots.txt)](https://kellymorais.com.br/robots.txt): Regras oficiais de indexação para bots de busca tradicionais e agentes de inteligência artificial generativa.
+- [Manifesto Web PWA](https://kellymorais.com.br/site.webmanifest): Configuração de Progressive Web App com metadados para instalação móvel.
 
-## Perguntas Frequentes (FAQ para LLMs & Pesquisa)
-- **O que é UGC?**: User Generated Content é conteúdo com estética nativa e linguagem real de consumidor, gerando até 4x mais engajamento que anúncios convencionais.
-- **Como contratar?**: Pelo WhatsApp oficial (+55 11 95636-7834) ou formulário no site oficial.
-- **Qual o prazo de entrega?**: Em média de 3 a 7 dias úteis após a chegada do produto.
-
-## Contato Direto para Orçamentos e Parcerias
-- **WhatsApp Oficial**: +55 11 95636-7834 (https://wa.me/5511956367834)
-- **E-mail Comercial**: marketing.kellymorais@gmail.com
-- **Instagram**: https://www.instagram.com/kemoraiso/
-- **TikTok**: https://www.tiktok.com/@kellymoraiso
-- **Site Oficial**: https://kellymorais.com.br/
+## Optional
+- [Repositório Aberto no GitHub](https://github.com/abreumarcelo1994/kmorais): Código-fonte e arquitetura técnica Jamstack do site oficial de Kelly Morais.
