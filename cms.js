@@ -25,6 +25,46 @@ function normalizeVideoUrl(url) {
   return url;
 }
 
+/**
+ * Normaliza e otimiza automaticamente URLs de imagens (Unsplash, Cloudinary, etc.)
+ * para garantir sempre entrega em WebP e parâmetros de alta performance.
+ */
+function normalizeImageUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  url = url.trim();
+
+  // Mantém blobs locais, identificadores IDB e Data URLs WebP
+  if (url.startsWith('data:image/webp') || url.startsWith('blob:') || url.startsWith('idb:')) {
+    return url;
+  }
+
+  // 1. Unsplash: força WebP e compressão automática
+  if (url.includes('images.unsplash.com')) {
+    try {
+      const u = new URL(url);
+      u.searchParams.set('auto', 'format');
+      u.searchParams.set('fit', 'crop');
+      u.searchParams.set('fm', 'webp');
+      const curQ = Number(u.searchParams.get('q'));
+      if (!curQ || curQ > 80) {
+        u.searchParams.set('q', '75');
+      }
+      return u.toString();
+    } catch (_) {
+      return url;
+    }
+  }
+
+  // 2. Cloudinary: injeta flags f_auto,q_auto
+  if (url.includes('res.cloudinary.com') && url.includes('/image/upload/')) {
+    if (!url.includes('f_auto') && !url.includes('f_webp')) {
+      return url.replace('/image/upload/', '/image/upload/f_auto,q_auto/');
+    }
+  }
+
+  return url;
+}
+
 // Sanitizador anti-XSS para renderização segura de textos e tags básicas do CMS
 function sanitizeHtml(str) {
   if (typeof str !== 'string') return '';
@@ -471,7 +511,8 @@ class KMCMS {
           window.attachSoundButton(heroFrame, heroVideo);
         }
         if (data.hero?.poster && !data.hero.poster.startsWith('idb:')) {
-          if (heroVideo.poster !== data.hero.poster) heroVideo.poster = data.hero.poster;
+          const normPoster = normalizeImageUrl(data.hero.poster);
+          if (heroVideo.poster !== normPoster) heroVideo.poster = normPoster;
         }
         if (data.hero?.video && !data.hero.video.startsWith('idb:')) {
           const normVideo = normalizeVideoUrl(data.hero.video);
@@ -519,13 +560,14 @@ class KMCMS {
           }
 
           if (item.image && !item.image.startsWith('idb:')) {
+            const normImg = normalizeImageUrl(item.image);
             circle.classList.add('has-custom-logo');
-            circle.dataset.customLogo = item.image;
+            circle.dataset.customLogo = normImg;
             let img = circle.querySelector('img.brand-logo-img');
             if (!img) {
-              circle.innerHTML = `<img src="${item.image}" alt="${item.name || ''}" class="brand-logo-img">`;
-            } else if (img.src !== item.image) {
-              img.src = item.image;
+              circle.innerHTML = `<img src="${normImg}" alt="${item.name || ''}" class="brand-logo-img">`;
+            } else if (img.src !== normImg) {
+              img.src = normImg;
               img.alt = item.name || '';
             }
           }
@@ -564,7 +606,8 @@ class KMCMS {
               window.attachSoundButton(cards[idx], video);
             }
             if (item.poster && !item.poster.startsWith('idb:')) {
-              if (video.poster !== item.poster) video.poster = item.poster;
+              const normPoster = normalizeImageUrl(item.poster);
+              if (video.poster !== normPoster) video.poster = normPoster;
             }
             if (item.video && !item.video.startsWith('idb:')) {
               const normVideo = normalizeVideoUrl(item.video);
@@ -608,8 +651,9 @@ class KMCMS {
 
           const cover = el.querySelector('.real-case-cover');
           if (cover && item.cover && !item.cover.startsWith('idb:')) {
-            cover.style.backgroundImage = `url("${item.cover}")`;
-            el.dataset.coverUrl = item.cover;
+            const normCover = normalizeImageUrl(item.cover);
+            cover.style.backgroundImage = `url("${normCover}")`;
+            el.dataset.coverUrl = normCover;
           }
         });
       }
@@ -631,7 +675,8 @@ class KMCMS {
           }
           const img = card.querySelector('img');
           if (img && post.image && !post.image.startsWith('idb:')) {
-            if (img.src !== post.image) img.src = post.image;
+            const normImg = normalizeImageUrl(post.image);
+            if (img.src !== normImg) img.src = normImg;
           }
         });
       }
@@ -674,8 +719,9 @@ class KMCMS {
 
       const aboutImg = document.querySelector('.about-image img');
       if (aboutImg && data.about?.image && !data.about.image.startsWith('idb:')) {
-        if (aboutImg.src !== data.about.image) {
-          aboutImg.src = data.about.image;
+        const normImg = normalizeImageUrl(data.about.image);
+        if (aboutImg.src !== normImg) {
+          aboutImg.src = normImg;
         }
       }
     } catch (e) {

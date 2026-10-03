@@ -113,6 +113,139 @@ function normalizeVideoUrl(url) {
 }
 
 /**
+ * Normaliza e otimiza automaticamente URLs de imagens externas (Unsplash, Cloudinary, etc.)
+ * para garantir sempre entrega em WebP e parâmetros de alta performance.
+ */
+function normalizeImageUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  url = url.trim();
+
+  // Mantém blobs locais, identificadores IDB e Data URLs WebP
+  if (url.startsWith('data:image/webp') || url.startsWith('blob:') || url.startsWith('idb:')) {
+    return url;
+  }
+
+  // 1. Unsplash: força WebP e compressão automática
+  if (url.includes('images.unsplash.com')) {
+    try {
+      const u = new URL(url);
+      u.searchParams.set('auto', 'format');
+      u.searchParams.set('fit', 'crop');
+      u.searchParams.set('fm', 'webp');
+      const curQ = Number(u.searchParams.get('q'));
+      if (!curQ || curQ > 80) {
+        u.searchParams.set('q', '75');
+      }
+      return u.toString();
+    } catch (_) {
+      return url;
+    }
+  }
+
+  // 2. Cloudinary: injeta flags f_auto,q_auto
+  if (url.includes('res.cloudinary.com') && url.includes('/image/upload/')) {
+    if (!url.includes('f_auto') && !url.includes('f_webp')) {
+      return url.replace('/image/upload/', '/image/upload/f_auto,q_auto/');
+    }
+  }
+
+  return url;
+}
+
+/**
+ * Converte qualquer arquivo de imagem para o padrão WebP diretamente no navegador.
+ * - Vetores SVG são mantidos como SVG puros para máxima nitidez vetorial.
+ * - Imagens raster (PNG, JPG, JPEG, BMP, etc.) são redimensionadas proporcionalmente (máx 1280px)
+ *   e convertidas para WebP a 80% de qualidade via Canvas HTML5.
+ * - Retorna { file: File (webp), dataUrl: string, originalSize, newSize, isSvg }
+ */
+function convertImageToWebp(file, maxWidth = 1280, quality = 0.8) {
+  return new Promise((resolve, reject) => {
+    if (!file || !file.type || !file.type.startsWith('image/')) {
+      resolve(null);
+      return;
+    }
+
+    // Para SVGs, preserva vetor puro sem perda
+    if (file.type === 'image/svg+xml') {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve({
+        file,
+        dataUrl: e.target.result,
+        originalSize: file.size,
+        newSize: file.size,
+        isSvg: true
+      });
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        if (height > maxWidth) {
+          width = Math.round((width * maxWidth) / height);
+          height = maxWidth;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // 1. Gera Data URL em WebP
+        let webpDataUrl = canvas.toDataURL('image/webp', quality);
+        if (!webpDataUrl.startsWith('data:image/webp')) {
+          webpDataUrl = canvas.toDataURL('image/jpeg', quality);
+        }
+
+        // 2. Gera File/Blob em WebP
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            resolve({
+              file,
+              dataUrl: webpDataUrl,
+              originalSize: file.size,
+              newSize: file.size,
+              isSvg: false
+            });
+            return;
+          }
+
+          const baseName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9._-]/g, '_');
+          const webpFile = new File([blob], `${baseName}.webp`, { type: 'image/webp' });
+          resolve({
+            file: webpFile,
+            dataUrl: webpDataUrl,
+            originalSize: file.size,
+            newSize: blob.size,
+            isSvg: false
+          });
+        }, 'image/webp', quality);
+      };
+      img.onerror = () => resolve({
+        file,
+        dataUrl: e.target.result,
+        originalSize: file.size,
+        newSize: file.size,
+        isSvg: false
+      });
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
  * Garante que mídias portáveis (URLs completas, caminhos relativos e Data URLs em Base64)
  * sejam preservadas em produção no content.json, em vez de IDs locais do IndexedDB.
  */
@@ -138,6 +271,19 @@ async function uploadFileToGitHub(file, onProgress) {
   const cfg = getGitHubConfig();
   if (!cfg || !cfg.token) return null;
 
+  // Se for imagem (exceto SVG), converte e otimiza para WebP antes do envio
+  if (file && file.type && file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
+    if (onProgress) onProgress('Otimizando imagem para WebP...');
+    try {
+      const webpResult = await convertImageToWebp(file);
+      if (webpResult && webpResult.file) {
+        file = webpResult.file;
+      }
+    } catch (e) {
+      console.warn('Falha na conversão WebP, enviando arquivo original:', e);
+    }
+  }
+
   if (onProgress) onProgress('Convertendo arquivo...');
 
   // 1. Ler o arquivo como ArrayBuffer e converter para base64 com segurança
@@ -151,10 +297,16 @@ async function uploadFileToGitHub(file, onProgress) {
   const base64Content = btoa(binary);
 
   // 2. Gerar nome único para o arquivo: media/timestamp_nome-sanitizado.ext
-  const safeName = file.name
+  let safeName = file.name
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
     .replace(/[^a-zA-Z0-9._-]/g, '_')                  // caracteres seguros
     .toLowerCase();
+
+  // Garante extensão .webp no nome se for WebP
+  if (file.type === 'image/webp' && !safeName.endsWith('.webp')) {
+    safeName = safeName.replace(/\.[^.]+$/, '') + '.webp';
+  }
+
   const ts = Date.now();
   const filePath = `media/${ts}_${safeName}`;
 
@@ -224,54 +376,9 @@ function formatFileSize(bytes) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
-function compressImageFile(file, maxWidth = 1280, quality = 0.85) {
-  return new Promise((resolve, reject) => {
-    if (!file || !file.type.startsWith('image/')) {
-      resolve(null);
-      return;
-    }
-
-    // Para SVGs, preserva vetor puro via Data URL
-    if (file.type === 'image/svg+xml') {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-      return;
-    }
-
-    const isPng = file.type === 'image/png';
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        let { width, height } = img;
-        if (width > maxWidth) {
-          height = Math.round((height * maxWidth) / width);
-          width = maxWidth;
-        }
-        if (height > maxWidth) {
-          width = Math.round((width * maxWidth) / height);
-          height = maxWidth;
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-
-        if (isPng) {
-          resolve(canvas.toDataURL('image/png'));
-        } else {
-          resolve(canvas.toDataURL('image/jpeg', quality));
-        }
-      };
-      img.onerror = () => resolve(e.target.result);
-      img.src = e.target.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+async function compressImageFile(file, maxWidth = 1280, quality = 0.8) {
+  const res = await convertImageToWebp(file, maxWidth, quality);
+  return res ? res.dataUrl : null;
 }
 
 class KMAdminPanel {
@@ -1017,13 +1124,13 @@ Detalhes: ${uploadErr.message}`);
           }
 
           let rawPosterUrl = document.getElementById('admin-modal-poster-url')?.value.trim() || '';
-          let finalPosterUrl = rawPosterUrl;
+          let finalPosterUrl = normalizeImageUrl(rawPosterUrl);
           let finalPosterId = null;
 
           if (isPosterFileTab && this.selectedPosterFile) {
-            // Tenta fazer upload para o GitHub primeiro
+            // Tenta fazer upload para o GitHub primeiro (como WebP otimizado)
             try {
-              saveBtn.textContent = 'Enviando imagem...';
+              saveBtn.textContent = 'Enviando imagem (WebP)...';
               const ghUrl = await uploadFileToGitHub(
                 this.selectedPosterFile,
                 (msg) => setProgress('poster-file-name', msg)
@@ -1036,11 +1143,12 @@ Detalhes: ${uploadErr.message}`);
                   await kmMediaStore.deleteMedia(this.currentEditingMedia.currentPosterId).catch(() => {});
                 }
               } else {
-                // Sem token GitHub: comprime e salva como base64 (funciona em todos dispositivos)
-                const compressed = await compressImageFile(this.selectedPosterFile);
-                finalPosterUrl = compressed || URL.createObjectURL(this.selectedPosterFile);
+                // Sem token GitHub: converte para WebP e salva como base64 (funciona em todos dispositivos)
+                const webpRes = await convertImageToWebp(this.selectedPosterFile);
+                finalPosterUrl = webpRes?.dataUrl || URL.createObjectURL(this.selectedPosterFile);
                 const mediaId = `idb:img_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-                await kmMediaStore.saveMedia(mediaId, this.selectedPosterFile, this.selectedPosterFile.type);
+                const fileToSave = webpRes?.file || this.selectedPosterFile;
+                await kmMediaStore.saveMedia(mediaId, fileToSave, fileToSave.type);
                 finalPosterId = mediaId;
                 if (this.currentEditingMedia.currentPosterId && this.currentEditingMedia.currentPosterId !== mediaId) {
                   await kmMediaStore.deleteMedia(this.currentEditingMedia.currentPosterId).catch(() => {});
@@ -1048,16 +1156,17 @@ Detalhes: ${uploadErr.message}`);
               }
             } catch (uploadErr) {
               console.error('Erro no upload da imagem para GitHub:', uploadErr);
-              // Fallback: comprime para base64 (portável, sem dependência de dispositivo)
-              const compressed = await compressImageFile(this.selectedPosterFile);
-              finalPosterUrl = compressed || URL.createObjectURL(this.selectedPosterFile);
+              // Fallback: comprime para base64 WebP (portável, sem dependência de dispositivo)
+              const webpRes = await convertImageToWebp(this.selectedPosterFile);
+              finalPosterUrl = webpRes?.dataUrl || URL.createObjectURL(this.selectedPosterFile);
               const mediaId = `idb:img_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-              await kmMediaStore.saveMedia(mediaId, this.selectedPosterFile, this.selectedPosterFile.type);
+              const fileToSave = webpRes?.file || this.selectedPosterFile;
+              await kmMediaStore.saveMedia(mediaId, fileToSave, fileToSave.type);
               finalPosterId = mediaId;
               if (this.currentEditingMedia.currentPosterId && this.currentEditingMedia.currentPosterId !== mediaId) {
                 await kmMediaStore.deleteMedia(this.currentEditingMedia.currentPosterId).catch(() => {});
               }
-              alert(`Aviso: o upload para GitHub falhou. A imagem foi salva como base64 e ainda deve funcionar em outros dispositivos.
+              alert(`Aviso: o upload para GitHub falhou. A imagem foi salva em formato WebP como base64 e continuará funcionando.
 
 Detalhes: ${uploadErr.message}`);
             }
@@ -1147,10 +1256,29 @@ Detalhes: ${uploadErr.message}`);
       }
     });
 
-    const handleFile = (file) => {
-      if (nameEl) nameEl.textContent = `${file.name} (${formatFileSize(file.size)})`;
+    const handleFile = async (file) => {
+      if (!file) return;
       if (emptyEl) emptyEl.classList.add('is-hidden');
       if (selectedEl) selectedEl.classList.remove('is-hidden');
+
+      if (file.type && file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
+        if (nameEl) nameEl.textContent = `${file.name} (Convertendo para WebP...)`;
+        try {
+          const webpRes = await convertImageToWebp(file);
+          if (webpRes && webpRes.file) {
+            file = webpRes.file;
+            const savings = Math.max(0, Math.round((1 - (webpRes.newSize / (webpRes.originalSize || 1))) * 100));
+            if (nameEl) {
+              nameEl.textContent = `${file.name} (${formatFileSize(webpRes.newSize)} · WebP -${savings}%)`;
+            }
+          }
+        } catch (err) {
+          console.warn('Erro ao otimizar para WebP:', err);
+          if (nameEl) nameEl.textContent = `${file.name} (${formatFileSize(file.size)})`;
+        }
+      } else {
+        if (nameEl) nameEl.textContent = `${file.name} (${formatFileSize(file.size)})`;
+      }
       if (onSelect) onSelect(file);
     };
 
@@ -1347,7 +1475,7 @@ Detalhes: ${uploadErr.message}`);
 
       brandsList.push({
         name: nameVal,
-        image: imageVal
+        image: normalizeImageUrl(imageVal)
       });
     });
 
@@ -1366,7 +1494,7 @@ Detalhes: ${uploadErr.message}`);
 
       portfolioVideos.push({
         video: videoVal,
-        poster: posterVal,
+        poster: normalizeImageUrl(posterVal),
         label: label || ''
       });
     });
@@ -1386,7 +1514,7 @@ Detalhes: ${uploadErr.message}`);
       const desc = caseEl.querySelector('.real-case-content p')?.innerHTML.trim();
 
       realCases.push({
-        cover: coverVal,
+        cover: normalizeImageUrl(coverVal),
         link: caseEl.getAttribute('href') || '',
         tag: tag || '',
         title: title || '',
@@ -1403,7 +1531,7 @@ Detalhes: ${uploadErr.message}`);
       const imgVal = getPortableMediaVal(img?.src, img?.dataset?.mediaId);
 
       instagramPosts.push({
-        image: imgVal,
+        image: normalizeImageUrl(imgVal),
         link: card.getAttribute('href') || '',
         label: label || ''
       });
@@ -1439,7 +1567,7 @@ Detalhes: ${uploadErr.message}`);
         text: heroText,
         sticker: heroSticker,
         video: heroVideoVal,
-        poster: heroPosterVal
+        poster: normalizeImageUrl(heroPosterVal)
       },
       brandsTitle,
       brandsList,
@@ -1453,7 +1581,7 @@ Detalhes: ${uploadErr.message}`);
       about: {
         title: aboutTitle,
         bio: aboutBio,
-        image: aboutImageVal
+        image: normalizeImageUrl(aboutImageVal)
       },
       contact: {
         title: contactTitle,

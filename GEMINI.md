@@ -80,6 +80,11 @@ Para eliminar o efeito indesejado onde a imagem antiga aparece por frações de 
   - Seções fora da tela devem utilizar `content-visibility: auto` com `contain-intrinsic-size` para não bloquear a renderização inicial.
 - **Renderização Assíncrona de Fontes**:
   - Manter fontes com `media="print" onload="this.media='all'"` e fallbacks de sistema no CSS.
+- **Padronização Automática WebP em Qualquer Mídia de Imagem**:
+  - Toda imagem enviada no painel admin (foto de perfil, capas, logos ou posters) é compulsoriamente convertida para o formato **WebP** (`convertImageToWebp`) diretamente no navegador antes de ser salva em Base64 ou enviada para a pasta `media/` do GitHub.
+  - Imagens raster devem ser redimensionadas proporcionalmente (largura máxima de 1280px) com taxa de compressão `quality: 0.80`, reduzindo o peso original em até 85-98%.
+  - Vetores (`image/svg+xml`) devem ser preservados como SVG puros para máxima nitidez.
+  - URLs externas (como Unsplash e Cloudinary) devem passar por `normalizeImageUrl`, garantindo injeção forçada de `fm=webp&auto=format&fit=crop` e compressão adequada.
 
 ---
 
