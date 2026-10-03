@@ -465,10 +465,26 @@ const videoObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0.15 });
 document.querySelectorAll('video').forEach((video) => videoObserver.observe(video));
 
+const filterBar = document.querySelector('.filter-bar');
 const filterButtons = document.querySelectorAll('[data-filter]');
 const categoryBlocks = document.querySelectorAll('[data-category]');
 let isManualFilterScroll = false;
 let filterScrollTimeout = null;
+
+/**
+ * Rola horizontalmente APENAS a barra de filtros para centralizar o botão ativo.
+ * NUNCA toca na rolagem vertical da página (window.scrollY), eliminando qualquer salto indesejado.
+ */
+function scrollFilterBarToActive(button) {
+  if (!filterBar || !button) return;
+  if (filterBar.scrollWidth <= filterBar.clientWidth) return;
+
+  const targetLeft = button.offsetLeft - (filterBar.clientWidth / 2) + (button.offsetWidth / 2);
+  filterBar.scrollTo({
+    left: Math.max(0, targetLeft),
+    behavior: 'smooth'
+  });
+}
 
 filterButtons.forEach((button) => {
   button.addEventListener('click', () => {
@@ -490,8 +506,8 @@ filterButtons.forEach((button) => {
       category.classList.toggle('is-hidden', !shouldShow);
     });
 
-    // 3. Centraliza o botão clicado na barra de filtros (especialmente no mobile)
-    button.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    // 3. Centraliza o botão clicado na barra de filtros horizontalmente (especialmente no mobile)
+    scrollFilterBarToActive(button);
 
     // 4. Rola a página suavemente para o topo do case selecionado,
     //    evitando que a redução de altura da página jogue o usuário no fim dela.
@@ -501,7 +517,6 @@ filterButtons.forEach((button) => {
         : document.querySelector(`[data-category="${selectedFilter}"]`);
 
       if (targetBlock) {
-        const filterBar = document.querySelector('.filter-bar');
         const filterBarHeight = filterBar ? filterBar.offsetHeight + 24 : 75;
         const targetTop = targetBlock.getBoundingClientRect().top + window.pageYOffset - filterBarHeight;
 
@@ -539,8 +554,8 @@ const categoryObserver = new IntersectionObserver((entries) => {
     button.setAttribute('aria-pressed', String(isActive));
     button.setAttribute('aria-current', isActive ? 'true' : 'false');
   });
-  activeButton.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-}, { rootMargin: '-24% 0px -58% 0px', threshold: [0.15, 0.35, 0.6] });
+  scrollFilterBarToActive(activeButton);
+}, { rootMargin: '-20% 0px -50% 0px', threshold: [0.1, 0.25, 0.5] });
 categoryBlocks.forEach((category) => categoryObserver.observe(category));
 
 /* === HEADER FIXO COM CONTROLE DE VISIBILIDADE ==================
@@ -549,7 +564,6 @@ categoryBlocks.forEach((category) => categoryObserver.observe(category));
    - Some quando chegar na última dobra da página (seção #contato e rodapé).
    ============================================================= */
 const siteHeader = document.querySelector('.site-header');
-const filterBar = document.querySelector('.filter-bar');
 const portfolioSection = document.querySelector('#trabalhos');
 const contactSection = document.querySelector('#contato');
 
@@ -563,7 +577,7 @@ function updateHeaderVisibility() {
   if (filterBar && portfolioSection) {
     const filterRect = filterBar.getBoundingClientRect();
     const portfolioRect = portfolioSection.getBoundingClientRect();
-    isFilterSticky = filterRect.top <= 25 && portfolioRect.bottom > 50;
+    isFilterSticky = filterRect.top <= 75 && portfolioRect.bottom > 80;
   }
 
   // 2. Última dobra da página (Contato e Rodapé):
@@ -575,6 +589,7 @@ function updateHeaderVisibility() {
 
   const shouldHideHeader = isFilterSticky || isLastFold;
   siteHeader.classList.toggle('is-hidden-header', shouldHideHeader);
+  siteHeader.classList.toggle('header-hidden', shouldHideHeader);
 }
 
 window.addEventListener('scroll', () => {
