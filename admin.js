@@ -3,7 +3,7 @@
  */
 
 // Hash SHA-256 com salt da senha de acesso — impossibilita busca reversa via rainbow tables.
-const ADMIN_PASSWORD_HASH = '0fd9ddc5fb9841753611f6ccaf3624c018fce055f9ad907dc51c2c48578d3d4b';
+const ADMIN_PASSWORD_HASH = '8243a0708a330f94d01a004351968dfb8a8254ff11aa2abfb32faff04864a92a';
 const ADMIN_SALT = ':km_salt_v2_9f8b2c';
 const AUTH_SESSION_KEY = 'km_admin_authenticated';
 const KM_GH_CONFIG_KEY = 'km_github_sync_config_v1';

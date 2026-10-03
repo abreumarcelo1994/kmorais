@@ -101,32 +101,14 @@ O servidor iniciará por padrão na porta 3000 (com detecção automática e fal
 
 ---
 
-## 6. Painel CMS Visual e Sincronização Direta com GitHub
+## 6. Painel CMS Visual e Governança de Conteúdo
 
-O projeto possui um editor visual in-browser (`admin.html`) que permite alterar textos, mídias e cases diretamente na tela, com salvamento e publicação imediata no GitHub sem depender de comandos no terminal.
+O projeto possui um editor visual in-browser (`admin.html`) para gerenciamento de textos, mídias e cases diretamente na tela, com persistência na base `content.json` e sincronização via GitHub API.
 
-### Acesso ao Painel
-- **Em Produção**: `https://kellymorais.com.br/admin.html`
-- **Em Desenvolvimento Local**: `http://localhost:3002/admin.html`
-- **Senha de Acesso**: `@marcelo123`
-
-### Como Ativar a Publicação Direta (Para Colaboradores)
-Para que qualquer alteração feita no painel seja enviada diretamente para a branch `main` do GitHub e entre no ar automaticamente para todos os visitantes e outros colaboradores:
-
-1. **Permissão de Colaborador**: Sua conta do GitHub precisa ser adicionada como colaboradora do repositório (`abreumarcelo1994/kmorais`) com permissão de escrita (*Write*).
-2. **Gerar Token Pessoal (PAT)**:
-   - Acesse [github.com/settings/tokens](https://github.com/settings/tokens).
-   - Clique em **Generate new token** &rarr; **Generate new token (classic)**.
-   - Em *Note*, digite: `KMORAIS CMS`.
-   - Marque a caixa de permissão: `repo` (Full control of repositories).
-   - Gere o token e copie o código `ghp_...`.
-3. **Conectar no Painel**:
-   - No topo do painel `admin.html`, clique em **`⚙️ Conectar GitHub`**.
-   - Cole seu código `ghp_...`, teste a conexão e clique em **Salvar Configuração**.
-   - O botão ficará verde: **`🟢 GitHub Conectado`**.
-4. **Publicação com 1 Clique**:
-   - Edite qualquer elemento na página e clique em **`💾 Salvar e Publicar`**.
-   - O painel enviará as alterações diretamente para o arquivo `content.json` no GitHub via API, disparando o deploy contínuo via GitHub Actions em produção.
+### Governança & Segurança de Acesso
+- **Autenticação Criptográfica**: O acesso administrativo é protegido por senha com hashing criptográfico SHA-256 e salt, além de proteção nativa contra ataques de força bruta (rate limiting com bloqueio temporário após tentativas incorretas).
+- **Publicação Segura**: Qualquer alteração enviada para produção exige autorização explícita e credenciais de escrita do GitHub (Personal Access Token - PAT) do administrador ou colaborador oficial, garantindo que usuários não autorizados não possam modificar o site.
+- **Armazenamento de Mídias**: Mídias enviadas localmente contam com resolução de alta velocidade via `IndexedDB` e purga automática de arquivos órfãos para otimização de banda e armazenamento.
 
 ---
 
