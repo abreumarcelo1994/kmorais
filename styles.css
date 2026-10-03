@@ -499,17 +499,17 @@ h1 em, h2 em { font-family: Georgia, serif; font-weight: 400; color: var(--coral
 }
 .real-case:hover .real-case-cover { transform: scale(1.03); }
 .real-case-featured .real-case-cover { height: 155px; min-height: 155px; }
-/* Covers dos cases — imagens estáveis e otimizadas */
+/* Covers dos cases — imagens estáveis e otimizadas em WebP */
 .cover-one {
   background-image:
     linear-gradient(135deg, rgba(214,238,130,.1), rgba(30,37,34,.15)),
-    url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&q=80&auto=format&fit=crop');
+    url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=450&q=75&auto=format&fit=crop&fm=webp');
 }
 .cover-two {
-  background-image: url('https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&q=80&auto=format&fit=crop');
+  background-image: url('https://images.unsplash.com/photo-1517841905240-472988babdf9?w=450&q=75&auto=format&fit=crop&fm=webp');
 }
 .cover-three {
-  background-image: url('https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&q=80&auto=format&fit=crop');
+  background-image: url('https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=450&q=75&auto=format&fit=crop&fm=webp');
 }
 /* cover-four: gradiente permanente */
 .cover-four {

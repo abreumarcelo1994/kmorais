@@ -14,12 +14,12 @@ const carousels = document.querySelectorAll('[data-carousel]');
 
 /* Covers de fallback — usados apenas quando o CMS não tem imagem configurada */
 const currentPortfolioCovers = [
-  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=700&q=85&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=700&q=85&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=700&q=85&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=700&q=85&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=700&q=85&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=700&q=85&auto=format&fit=crop'
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=360&q=70&auto=format&fit=crop&fm=webp',
+  'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=360&q=70&auto=format&fit=crop&fm=webp',
+  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=360&q=70&auto=format&fit=crop&fm=webp',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=360&q=70&auto=format&fit=crop&fm=webp',
+  'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=360&q=70&auto=format&fit=crop&fm=webp',
+  'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=360&q=70&auto=format&fit=crop&fm=webp'
 ];
 
 /* Vídeos de fallback para o portfólio */
@@ -197,12 +197,12 @@ document.querySelectorAll('.video-card').forEach((card, index) => {
     video.load();
   }
 
-  // Se houver poster configurado no CMS, utiliza-o de imediato; caso contrário, fallback Unsplash
+  // Se houver poster configurado no CMS, utiliza-o de imediato; caso contrário, preserva poster ou data-poster
   const cmsPoster = window.kmCMS?.data?.portfolioVideos?.[index]?.poster;
   if (cmsPoster && !cmsPoster.startsWith('idb:')) {
     video.poster = cmsPoster;
-  } else if (!video.poster || video.poster.includes('canva.site')) {
-    video.poster = currentPortfolioCovers[index % currentPortfolioCovers.length];
+  } else if (!video.poster && !video.dataset.poster) {
+    video.dataset.poster = currentPortfolioCovers[index % currentPortfolioCovers.length];
   }
 
   // Remove eventual badge legada de Play para não conflitar com player
@@ -216,6 +216,31 @@ document.querySelectorAll('.video-card').forEach((card, index) => {
   video.addEventListener('pause', () => card.classList.remove('is-playing'));
   video.addEventListener('ended', () => card.classList.remove('is-playing'));
 });
+
+// Lazy-loading de posters com IntersectionObserver para máxima velocidade inicial (LCP < 1.0s)
+if ('IntersectionObserver' in window) {
+  const videoPosterObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const video = entry.target;
+        if (video.dataset.poster) {
+          video.poster = video.dataset.poster;
+          delete video.dataset.poster;
+        }
+        observer.unobserve(video);
+      }
+    });
+  }, { rootMargin: '350px 0px' });
+
+  document.querySelectorAll('video[data-poster]').forEach((video) => {
+    videoPosterObserver.observe(video);
+  });
+} else {
+  document.querySelectorAll('video[data-poster]').forEach((video) => {
+    video.poster = video.dataset.poster;
+    delete video.dataset.poster;
+  });
+}
 
 // Inicialização do vídeo Hero com player customizado
 const heroVideo = document.querySelector('.hero-frame video');
@@ -344,6 +369,11 @@ function setupDragToScroll(carousel, isVideo = false) {
 
       const video = card.querySelector('video');
       if (!video) return;
+
+      if (video.dataset.poster) {
+        video.poster = video.dataset.poster;
+        delete video.dataset.poster;
+      }
 
       if (video.paused) {
         // Pausa outros vídeos para evitar reprodução/áudio simultâneo
