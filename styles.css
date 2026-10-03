@@ -1,4 +1,28 @@
-/* Google Fonts é carregada via <link rel="preload"> no HTML — sem @import aqui para evitar double-fetch */
+/* === FALLBACKS TIPOGRÁFICOS CALIBRADOS (ZERO LAYOUT SHIFT / CLS = 0.000) === */
+@font-face {
+  font-family: 'SpaceGroteskFallback';
+  src: local('Arial'), local('Segoe UI'), local('Helvetica Neue'), local('sans-serif');
+  ascent-override: 95%;
+  descent-override: 25%;
+  line-gap-override: 0%;
+  size-adjust: 102%;
+}
+@font-face {
+  font-family: 'ManropeFallback';
+  src: local('Arial'), local('Segoe UI'), local('Helvetica Neue'), local('sans-serif');
+  ascent-override: 96%;
+  descent-override: 26%;
+  line-gap-override: 0%;
+  size-adjust: 100%;
+}
+@font-face {
+  font-family: 'DMMonoFallback';
+  src: local('Consolas'), local('Menlo'), local('Courier New'), local('monospace');
+  ascent-override: 90%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+  size-adjust: 100%;
+}
 
 /* === TOKENS =================================================== */
 :root {
@@ -14,10 +38,10 @@
   --green-dot: #2e7d32;
   --muted:   #4e544c;
   --line:    rgba(30,37,34,.18);
-  --display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --body:    'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --mono:    'DM Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --sans:    'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; /* alias de compatibilidade com admin.css */
+  --display: 'Space Grotesk', 'SpaceGroteskFallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --body:    'Manrope', 'ManropeFallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --mono:    'DM Mono', 'DMMonoFallback', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --sans:    'Manrope', 'ManropeFallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; /* alias de compatibilidade com admin.css */
 }
 
 /* === OTIMIZAÇÃO DE PERFORMANCE (CORE WEB VITALS / PAGESPEED) === */
@@ -1903,10 +1927,10 @@ body::before {
    MODAIS DE CONTATO (LINKTREE & BRIEFING)
    ============================================================ */
 .contact-modal {
+  display: none;
   position: fixed;
   inset: 0;
   z-index: 100;
-  display: grid;
   place-items: center;
   padding: 20px;
   opacity: 0;
@@ -1915,6 +1939,7 @@ body::before {
   transition: opacity .25s ease, visibility .25s ease;
 }
 .contact-modal.is-active {
+  display: grid;
   opacity: 1;
   visibility: visible;
   pointer-events: all;

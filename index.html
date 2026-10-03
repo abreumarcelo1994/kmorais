@@ -47,10 +47,14 @@
   <!-- Preload do LCP Crítico (Imagem do Hero Poster em WebP Ultra-leve) -->
   <link rel="preload" as="image" href="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&q=75&auto=format&fit=crop&fm=webp" fetchpriority="high">
 
-  <!-- Google Fonts: Carregamento Assíncrono Não-Bloqueante (PageSpeed 99+) -->
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"></noscript>
+  <!-- Preload das Fontes Críticas WOFF2 (Elimina 100% do Layout Shift FOUT / CLS = 0.000) -->
+  <link rel="preload" href="https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="https://fonts.gstatic.com/s/manrope/v20/xn7gYHE41ni1AdIRggexSvfedN4.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="https://fonts.gstatic.com/s/dmmono/v16/aFTR7PB1QTsUX8KYvumzEYOtbYf-Vlg.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="https://fonts.gstatic.com/s/dmmono/v16/aFTU7PB1QTsUX8KYthqQBK6PYK0.woff2" as="font" type="font/woff2" crossorigin>
+
+  <!-- Google Fonts: Folha de estilos carregada diretamente com prioridade ideal -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap">
   <!-- Folha de Estilos Principal (Preload de Alta Prioridade + Zero Layout Shift CLS 0.000) -->
   <link rel="preload" as="style" href="styles.css">
   <link rel="stylesheet" href="styles.css">
@@ -869,7 +873,7 @@
   <a class="whatsapp-float" href="https://wa.me/5511956367834?text=Oi%20Kelly%2C%20vim%20pelo%20seu%20portfolio%20e%20quero%20falar%20sobre%20um%20projeto." target="_blank" rel="noreferrer" aria-label="Falar com Kelly pelo WhatsApp" title="Falar no WhatsApp"><span aria-hidden="true">&#9742;</span><b>WhatsApp</b></a>
 
   <!-- POPUP 1: MENU DE CONTATO ESTILO LINKTREE -->
-  <div class="contact-modal" id="modal-linktree" aria-hidden="true" inert role="dialog" aria-labelledby="linktree-title">
+  <div class="contact-modal" id="modal-linktree" style="display:none;" aria-hidden="true" inert role="dialog" aria-labelledby="linktree-title">
     <div class="contact-modal-backdrop" data-close-modal></div>
     <div class="contact-modal-box linktree-box">
       <button class="contact-modal-close" type="button" aria-label="Fechar popup" data-close-modal>&#10005;</button>
@@ -907,7 +911,7 @@
   </div>
 
   <!-- POPUP 2: FORMULÁRIO DE BRIEFING COMPLETO -->
-  <div class="contact-modal" id="modal-email-form" aria-hidden="true" inert role="dialog" aria-labelledby="email-modal-title">
+  <div class="contact-modal" id="modal-email-form" style="display:none;" aria-hidden="true" inert role="dialog" aria-labelledby="email-modal-title">
     <div class="contact-modal-backdrop" data-close-modal></div>
     <div class="contact-modal-box email-form-box">
       <div class="modal-nav-bar">

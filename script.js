@@ -766,7 +766,10 @@ const contactTriggers = document.querySelectorAll('[data-open-contact]');
 
 const openModal = (modal) => {
   if (!modal) return;
-  modal.classList.add('is-active');
+  modal.style.display = 'grid';
+  requestAnimationFrame(() => {
+    modal.classList.add('is-active');
+  });
   modal.setAttribute('aria-hidden', 'false');
   modal.removeAttribute('inert');
   document.body.style.overflow = 'hidden';
@@ -777,6 +780,11 @@ const closeModal = (modal) => {
   modal.classList.remove('is-active');
   modal.setAttribute('aria-hidden', 'true');
   modal.setAttribute('inert', '');
+  setTimeout(() => {
+    if (!modal.classList.contains('is-active')) {
+      modal.style.display = 'none';
+    }
+  }, 260);
   if (!document.querySelector('.contact-modal.is-active')) {
     document.body.style.overflow = '';
   }
