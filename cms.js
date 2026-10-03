@@ -29,9 +29,14 @@ function normalizeVideoUrl(url) {
  * Normaliza e otimiza automaticamente URLs de imagens (Unsplash, Cloudinary, etc.)
  * para garantir sempre entrega em WebP e parâmetros de alta performance.
  */
-function normalizeImageUrl(url) {
+function normalizeImageUrl(url, maxW) {
   if (!url || typeof url !== 'string') return '';
   url = url.trim();
+
+  // Garante que referências locais na pasta media usem a versão compactada .webp
+  if (url.includes('/media/') && (url.endsWith('.jpeg') || url.endsWith('.jpg'))) {
+    url = url.replace(/\.(jpeg|jpg)$/i, '.webp');
+  }
 
   // Mantém blobs locais, identificadores IDB e Data URLs WebP
   if (url.startsWith('data:image/webp') || url.startsWith('blob:') || url.startsWith('idb:')) {
@@ -45,9 +50,15 @@ function normalizeImageUrl(url) {
       u.searchParams.set('auto', 'format');
       u.searchParams.set('fit', 'crop');
       u.searchParams.set('fm', 'webp');
+      const curW = Number(u.searchParams.get('w'));
+      if (maxW && (!curW || curW > maxW)) {
+        u.searchParams.set('w', String(maxW));
+      } else if (!curW || curW > 500) {
+        u.searchParams.set('w', '360');
+      }
       const curQ = Number(u.searchParams.get('q'));
-      if (!curQ || curQ > 80) {
-        u.searchParams.set('q', '75');
+      if (!curQ || curQ > 75) {
+        u.searchParams.set('q', '70');
       }
       return u.toString();
     } catch (_) {
@@ -606,7 +617,7 @@ class KMCMS {
               window.attachSoundButton(cards[idx], video);
             }
             if (item.poster && !item.poster.startsWith('idb:')) {
-              const normPoster = normalizeImageUrl(item.poster);
+              const normPoster = normalizeImageUrl(item.poster, 360);
               if (video.poster !== normPoster) video.poster = normPoster;
             }
             if (item.video && !item.video.startsWith('idb:')) {
