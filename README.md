@@ -3,7 +3,7 @@
 > Plataforma web de alta performance desenvolvida para a criadora de conteúdo UGC e estrategista de marketing **Kelly Morais**, sediada em São Paulo, Brasil.
 
 [![PageSpeed Insights: 99](https://img.shields.io/badge/PageSpeed-99%2B-brightgreen.svg)](#performance--core-web-vitals)
-[![GitHub Pages](https://img.shields.io/badge/Deploy-GitHub%20Pages-blue.svg)](https://abreumarcelo1994.github.io/kmorais/)
+[![GitHub Pages](https://img.shields.io/badge/Deploy-GitHub%20Pages-blue.svg)](https://kellymorais.com.br/)
 [![Schema.org](https://img.shields.io/badge/Schema.org-VideoObject%20%7C%20FAQ%20%7C%20Person-orange.svg)](#seo-semantico--dados-estruturados)
 [![PWA Ready](https://img.shields.io/badge/PWA-Manifest%20Ready-purple.svg)](#progressive-web-app-pwa)
 
@@ -106,7 +106,7 @@ O servidor iniciará por padrão na porta 3000 (com detecção automática e fal
 O projeto possui um editor visual in-browser (`admin.html`) que permite alterar textos, mídias e cases diretamente na tela, com salvamento e publicação imediata no GitHub sem depender de comandos no terminal.
 
 ### Acesso ao Painel
-- **Em Produção**: `https://abreumarcelo1994.github.io/kmorais/admin.html`
+- **Em Produção**: `https://kellymorais.com.br/admin.html`
 - **Em Desenvolvimento Local**: `http://localhost:3002/admin.html`
 - **Senha de Acesso**: `@marcelo123`
 
@@ -144,7 +144,7 @@ git push origin main
 
 ## 8. Contato Comercial & Direitos
 
-- **Website Oficial**: [abreumarcelo1994.github.io/kmorais](https://abreumarcelo1994.github.io/kmorais/)
+- **Website Oficial**: [kellymorais.com.br](https://kellymorais.com.br/)
 - **WhatsApp**: [+55 11 95636-7834](https://wa.me/5511956367834)
 - **E-mail**: [marketing.kellymorais@gmail.com](mailto:marketing.kellymorais@gmail.com)
 - **Instagram**: [@kemoraiso](https://www.instagram.com/kemoraiso/)

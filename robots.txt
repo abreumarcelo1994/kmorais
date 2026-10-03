@@ -71,5 +71,5 @@ User-agent: Bytespider
 Allow: /
 
 # Sitemap Canônico & Metadados Estruturados para IAs
-Sitemap: https://abreumarcelo1994.github.io/kmorais/sitemap.xml
-# LLMs Full Context Specification: https://abreumarcelo1994.github.io/kmorais/llms.txt
+Sitemap: https://kellymorais.com.br/sitemap.xml
+# LLMs Full Context Specification: https://kellymorais.com.br/llms.txt
