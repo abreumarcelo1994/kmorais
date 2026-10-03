@@ -407,17 +407,33 @@ if (socialCarousel) {
 
   socialCarousel.innerHTML = postsToRender.map((post, index) => `<a class="photo-card" href="${post.link || ''}" target="_blank" rel="noreferrer"><img src="${post.image || ''}" alt="${post.label || ''}" loading="lazy" onerror="this.onerror=null;this.src='${currentPortfolioCovers[index % currentPortfolioCovers.length]}'"><span>${post.label || ''} <b>&#8599;</b></span></a>`).join('');
   const photoShell = socialCarousel.closest('.photo-carousel-shell');
-  const photoStep = () => Math.min(socialCarousel.clientWidth * 0.8, 500);
-  photoShell.querySelector('.prev').addEventListener('click', () => socialCarousel.scrollBy({ left: -photoStep(), behavior: 'smooth' }));
-  photoShell.querySelector('.next').addEventListener('click', () => socialCarousel.scrollBy({ left: photoStep(), behavior: 'smooth' }));
+  const socialProgress = photoShell?.nextElementSibling?.querySelector('.progress-track i');
+  let socialMaxScroll = 0;
+  let socialStep = 400;
+
+  const updateSocialDimensions = () => {
+    socialMaxScroll = Math.max(0, socialCarousel.scrollWidth - socialCarousel.clientWidth);
+    socialStep = Math.min(socialCarousel.clientWidth * 0.8, 500);
+  };
+  updateSocialDimensions();
+
+  if (window.ResizeObserver) {
+    new ResizeObserver(updateSocialDimensions).observe(socialCarousel);
+  } else {
+    window.addEventListener('resize', updateSocialDimensions, { passive: true });
+  }
+  window.addEventListener('load', updateSocialDimensions, { once: true });
+
+  photoShell.querySelector('.prev')?.addEventListener('click', () => socialCarousel.scrollBy({ left: -socialStep, behavior: 'smooth' }));
+  photoShell.querySelector('.next')?.addEventListener('click', () => socialCarousel.scrollBy({ left: socialStep, behavior: 'smooth' }));
+
   let socialScrollTicking = false;
   socialCarousel.addEventListener('scroll', () => {
     if (!socialScrollTicking) {
       requestAnimationFrame(() => {
-        const maxScroll = socialCarousel.scrollWidth - socialCarousel.clientWidth;
-        const progress = photoShell.nextElementSibling.querySelector('.progress-track i');
-        if (progress) {
-          progress.style.width = `${maxScroll ? Math.max(24, (socialCarousel.scrollLeft / maxScroll) * 76 + 24) : 24}%`;
+        if (socialProgress) {
+          const scale = socialMaxScroll > 0 ? Math.max(0.24, (socialCarousel.scrollLeft / socialMaxScroll) * 0.76 + 0.24) : 0.24;
+          socialProgress.style.transform = `scaleX(${scale})`;
         }
         socialScrollTicking = false;
       });
@@ -431,20 +447,35 @@ carousels.forEach((carousel) => {
   const shell = carousel.closest('.carousel-shell');
   const previous = shell.querySelector('.prev');
   const next = shell.querySelector('.next');
-  const progress = shell.closest('.category-block').querySelector('.progress-track i');
-  const step = () => Math.min(carousel.clientWidth * 0.8, 500);
+  const categoryBlock = shell.closest('.category-block');
+  const progress = categoryBlock ? categoryBlock.querySelector('.progress-track i') : null;
 
-  previous.addEventListener('click', () => carousel.scrollBy({ left: -step(), behavior: 'smooth' }));
-  next.addEventListener('click', () => carousel.scrollBy({ left: step(), behavior: 'smooth' }));
+  let maxScroll = 0;
+  let carouselStep = 400;
+
+  const updateCarouselDimensions = () => {
+    maxScroll = Math.max(0, carousel.scrollWidth - carousel.clientWidth);
+    carouselStep = Math.min(carousel.clientWidth * 0.8, 500);
+  };
+  updateCarouselDimensions();
+
+  if (window.ResizeObserver) {
+    new ResizeObserver(updateCarouselDimensions).observe(carousel);
+  } else {
+    window.addEventListener('resize', updateCarouselDimensions, { passive: true });
+  }
+  window.addEventListener('load', updateCarouselDimensions, { once: true });
+
+  previous.addEventListener('click', () => carousel.scrollBy({ left: -carouselStep, behavior: 'smooth' }));
+  next.addEventListener('click', () => carousel.scrollBy({ left: carouselStep, behavior: 'smooth' }));
 
   let carouselScrollTicking = false;
   carousel.addEventListener('scroll', () => {
     if (!carouselScrollTicking) {
       requestAnimationFrame(() => {
-        const maxScroll = carousel.scrollWidth - carousel.clientWidth;
-        const percentage = maxScroll ? Math.max(24, (carousel.scrollLeft / maxScroll) * 76 + 24) : 24;
         if (progress) {
-          progress.style.width = `${percentage}%`;
+          const scale = maxScroll > 0 ? Math.max(0.24, (carousel.scrollLeft / maxScroll) * 0.76 + 0.24) : 0.24;
+          progress.style.transform = `scaleX(${scale})`;
         }
         carouselScrollTicking = false;
       });
