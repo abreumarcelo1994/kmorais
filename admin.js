@@ -93,6 +93,29 @@ function saveGitHubConfig(cfg) {
   }
 }
 
+// Ativação simplificada de token em outro dispositivo via URL hash segura
+// Ex: https://kellymorais.com.br/admin#setupToken=ghp_...
+(function checkSetupTokenInUrl() {
+  try {
+    const hash = window.location.hash || '';
+    if (hash.includes('setupToken=')) {
+      const match = hash.match(/setupToken=([^&]+)/);
+      if (match && match[1]) {
+        const token = decodeURIComponent(match[1]).trim();
+        if (token && !token.includes('*')) {
+          const cfg = getGitHubConfig();
+          cfg.token = token;
+          saveGitHubConfig(cfg);
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+          setTimeout(() => {
+            alert('✓ Conexão com o GitHub ativada com sucesso neste dispositivo! Agora você pode enviar vídeos e fotos direto para o site.');
+          }, 350);
+        }
+      }
+    }
+  } catch (e) {}
+})();
+
 function normalizeVideoUrl(url) {
   if (!url || typeof url !== 'string') return '';
   url = url.trim();
@@ -359,6 +382,9 @@ async function uploadFileToGitHub(file, onProgress) {
 
   if (!putRes.ok) {
     const err = await putRes.json().catch(() => ({}));
+    if (putRes.status === 401) {
+      throw new Error(`(401) Bad credentials — O token do GitHub inserido é inválido, expirou ou foi copiado com asteriscos. Se você copiou da tela de edição do GitHub, clique em "Regenerate token" para gerar um código visível.`);
+    }
     throw new Error(`GitHub upload falhou (${putRes.status}): ${err.message || 'erro desconhecido'}`);
   }
 
@@ -1867,10 +1893,37 @@ Detalhes: ${uploadErr.message}`);
           return;
         }
 
+        if (token.includes('*')) {
+          alert('Atenção: O token contém asteriscos (ghp_****). O GitHub oculta tokens antigos após a criação. Para obter o código real, clique em "Regenerate token" na página do GitHub.');
+          return;
+        }
+
         saveGitHubConfig({ token, repo, branch, path });
         updateBtnState();
         this.showToast('✓ Configuração do GitHub salva com sucesso!');
         closeModal();
+      });
+    }
+
+    // Copiar Link de Ativação Direta para Outro Computador
+    const ghShareBtn = document.getElementById('admin-gh-share-btn');
+    if (ghShareBtn) {
+      ghShareBtn.addEventListener('click', () => {
+        const cfg = getGitHubConfig();
+        if (!cfg || !cfg.token || cfg.token.includes('*')) {
+          alert('Por favor, configure e salve um token válido neste computador primeiro antes de gerar o link de compartilhamento.');
+          return;
+        }
+        const shareUrl = `${window.location.origin}/admin.html#setupToken=${encodeURIComponent(cfg.token)}`;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(shareUrl).then(() => {
+            alert('✓ Link de ativação copiado com sucesso!\n\nEnvie este link para a outra pessoa (por exemplo, via WhatsApp). Ao abrir no navegador dela, o GitHub será ativado automaticamente sem ela precisar digitar token!');
+          }).catch(() => {
+            prompt('Copie o link abaixo e envie para a outra pessoa:', shareUrl);
+          });
+        } else {
+          prompt('Copie o link abaixo e envie para a outra pessoa:', shareUrl);
+        }
       });
     }
 
@@ -1884,6 +1937,14 @@ Detalhes: ${uploadErr.message}`);
           if (ghStatusEl) {
             ghStatusEl.className = 'admin-gh-status is-error';
             ghStatusEl.textContent = '❌ Por favor, preencha o campo do Token antes de testar.';
+          }
+          return;
+        }
+
+        if (token.includes('*')) {
+          if (ghStatusEl) {
+            ghStatusEl.className = 'admin-gh-status is-error';
+            ghStatusEl.textContent = '❌ O token inserido contém asteriscos (ghp_****). O GitHub oculta tokens antigos após a criação. Para obter o código real, clique em "Regenerate token" na página do GitHub.';
           }
           return;
         }
@@ -1909,7 +1970,7 @@ Detalhes: ${uploadErr.message}`);
             ghStatusEl.textContent = `✓ Conexão bem-sucedida com "${repoData.full_name}"! ${hasPush ? 'Permissão de escrita confirmada.' : 'Atenção: verifique se o token tem permissão de escrita.'}`;
           } else if (res.status === 401) {
             ghStatusEl.className = 'admin-gh-status is-error';
-            ghStatusEl.textContent = '❌ Erro 401: Token inválido ou expirado. Verifique o código inserido.';
+            ghStatusEl.textContent = '❌ Erro 401: Token inválido ou expirado. Verifique o código inserido ou clique em "Regenerate token" no GitHub.';
           } else if (res.status === 404) {
             ghStatusEl.className = 'admin-gh-status is-error';
             ghStatusEl.textContent = `❌ Erro 404: Repositório "${repo}" não encontrado ou token sem acesso.`;
