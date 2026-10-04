@@ -144,6 +144,19 @@ if (fs.existsSync('sw.js')) {
   console.log('   ✅ Service Worker (sw.js) presente no repositório');
 }
 
+// 6. Verificação de Minificação do CSS (Lighthouse CWV)
+console.log('\n6. Verificando minificação de styles.css...');
+if (fs.existsSync('styles.css')) {
+  const css = fs.readFileSync('styles.css', 'utf8');
+  const cssKb = (css.length / 1024).toFixed(1);
+  if (css.length > 65 * 1024) {
+    console.error(`   ❌ ERRO: styles.css não está minificado (${cssKb} KB > 65 KB). Execute 'npm run build:css'!`);
+    hasErrors = true;
+  } else {
+    console.log(`   ✅ styles.css minificado para produção (${cssKb} KB)`);
+  }
+}
+
 // Relatório Final
 console.log('\n' + '='.repeat(50));
 if (warnings.length > 0) {

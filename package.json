@@ -7,9 +7,11 @@
     "dev": "node server.js",
     "start": "node server.js",
     "serve": "node server.js",
+    "build:css": "node scripts/build-css.js",
+    "build": "npm run build:css",
     "test": "node -c script.js cms.js admin.js server.js sw.js",
     "audit": "node scripts/audit.js",
-    "validate": "npm test && npm run audit"
+    "validate": "npm run build:css && npm test && npm run audit"
   },
   "keywords": [
     "ugc",
@@ -19,6 +21,8 @@
     "cms"
   ],
   "author": "Kelly Morais",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "clean-css": "^5.3.3"
+  }
 }
-
