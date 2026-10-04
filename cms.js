@@ -43,8 +43,11 @@ function normalizeImageUrl(url, maxW) {
     return url;
   }
 
-  // 1. Unsplash: força WebP e compressão automática
+  // 1. Unsplash: auto-healing de fotos antigas/removidas e força WebP/compressão
   if (url.includes('images.unsplash.com')) {
+    if (url.includes('photo-1512290900672-1f0233320ef4')) {
+      url = url.replace('photo-1512290900672-1f0233320ef4', 'photo-1527799820374-dcf8d9d4a388');
+    }
     try {
       const u = new URL(url);
       u.searchParams.set('auto', 'format');
@@ -184,14 +187,14 @@ const defaultCMSContent = {
     }
   ],
   instagramPosts: [
-    { image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&q=80&auto=format&fit=crop', link: 'https://www.instagram.com/kemoraiso/reel/Dc4TsgNhvXy/', label: 'post recente / 01' },
-    { image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&q=80&auto=format&fit=crop', link: 'https://www.instagram.com/kemoraiso/reel/DdFP3quBgB9/', label: 'post recente / 02' },
-    { image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&q=80&auto=format&fit=crop', link: 'https://www.instagram.com/kemoraiso/reel/DctXke_BpJF/', label: 'post recente / 03' },
-    { image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80&auto=format&fit=crop', link: 'https://www.instagram.com/kemoraiso/reel/Dbto7oNho3o/', label: 'post recente / 04' },
-    { image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&q=80&auto=format&fit=crop', link: 'https://www.instagram.com/kemoraiso/reel/Dav1BwnB8S4/', label: 'post recente / 05' },
-    { image: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=600&q=80&auto=format&fit=crop', link: 'https://www.instagram.com/kemoraiso/reel/DcRrZvuh33B/', label: 'post recente / 06' },
-    { image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&q=80&auto=format&fit=crop', link: 'https://www.instagram.com/kemoraiso/reel/DY65T1vu4bn/', label: 'post recente / 07' },
-    { image: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600&q=80&auto=format&fit=crop', link: 'https://www.instagram.com/kemoraiso/reel/Daan3KYuQgw/', label: 'post recente / 08' }
+    { image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=60&auto=format&fit=crop&fm=webp', link: 'https://www.instagram.com/kemoraiso/reel/Dc4TsgNhvXy/', label: 'post recente / 01' },
+    { image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&q=60&auto=format&fit=crop&fm=webp', link: 'https://www.instagram.com/kemoraiso/reel/DdFP3quBgB9/', label: 'post recente / 02' },
+    { image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&q=60&auto=format&fit=crop&fm=webp', link: 'https://www.instagram.com/kemoraiso/reel/DctXke_BpJF/', label: 'post recente / 03' },
+    { image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=60&auto=format&fit=crop&fm=webp', link: 'https://www.instagram.com/kemoraiso/reel/Dbto7oNho3o/', label: 'post recente / 04' },
+    { image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&q=60&auto=format&fit=crop&fm=webp', link: 'https://www.instagram.com/kemoraiso/reel/Dav1BwnB8S4/', label: 'post recente / 05' },
+    { image: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400&q=60&auto=format&fit=crop&fm=webp', link: 'https://www.instagram.com/kemoraiso/reel/DcRrZvuh33B/', label: 'post recente / 06' },
+    { image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=60&auto=format&fit=crop&fm=webp', link: 'https://www.instagram.com/kemoraiso/reel/DY65T1vu4bn/', label: 'post recente / 07' },
+    { image: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&q=60&auto=format&fit=crop&fm=webp', link: 'https://www.instagram.com/kemoraiso/reel/Daan3KYuQgw/', label: 'post recente / 08' }
   ]
 };
 
@@ -370,8 +373,12 @@ class KMCMS {
 
   loadLocalContent() {
     try {
-      const saved = localStorage.getItem(KM_CMS_STORAGE_KEY);
+      let saved = localStorage.getItem(KM_CMS_STORAGE_KEY);
       if (saved) {
+        if (saved.includes('photo-1512290900672-1f0233320ef4')) {
+          saved = saved.replace(/photo-1512290900672-1f0233320ef4/g, 'photo-1527799820374-dcf8d9d4a388');
+          localStorage.setItem(KM_CMS_STORAGE_KEY, saved);
+        }
         const parsed = JSON.parse(saved);
         return deepMerge(defaultCMSContent, parsed);
       }

@@ -69,6 +69,10 @@
       try {
         var raw = localStorage.getItem('kmorais_cms_content_v1');
         if (!raw) return;
+        if (raw.indexOf('photo-1512290900672-1f0233320ef4') !== -1) {
+          raw = raw.replace(/photo-1512290900672-1f0233320ef4/g, 'photo-1527799820374-dcf8d9d4a388');
+          localStorage.setItem('kmorais_cms_content_v1', raw);
+        }
         var data = JSON.parse(raw);
         window.__KM_EARLY_CMS__ = data;
 
