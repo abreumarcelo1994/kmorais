@@ -56,11 +56,21 @@ function serveFile(req, res, filePath) {
       return;
     }
 
+    // Política de Cache TTL Otimizada: 1 ano para mídias/fontes, 30 dias para CSS/JS
+    let cacheControl = 'public, max-age=86400, stale-while-revalidate=604800'; // 1 dia padrão
+    if (ext === '.html' || ext === '.json') {
+      cacheControl = 'no-cache, must-revalidate';
+    } else if (filePath.includes('/media/') || ext === '.webp' || ext === '.png' || ext === '.jpg' || ext === '.jpeg' || ext === '.woff2' || ext === '.mp4') {
+      cacheControl = 'public, max-age=31536000, immutable'; // 1 ano para mídias, imagens e fontes
+    } else if (ext === '.css' || ext === '.js') {
+      cacheControl = 'public, max-age=2592000, stale-while-revalidate=86400'; // 30 dias para CSS/JS
+    }
+
     // Resposta Padrão
     res.writeHead(200, {
       'Content-Type': contentType,
       'Content-Length': totalSize,
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Cache-Control': cacheControl,
       'Access-Control-Allow-Origin': req.headers.origin || '*',
       'X-Content-Type-Options': 'nosniff',
       'X-Frame-Options': 'SAMEORIGIN'

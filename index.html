@@ -996,5 +996,12 @@
 
   <script src="cms.js" defer></script>
   <script src="script.js" defer></script>
+  <script>
+    if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./sw.js').catch(function () {});
+      });
+    }
+  </script>
 </body>
 </html>
