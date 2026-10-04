@@ -14,12 +14,12 @@ const carousels = document.querySelectorAll('[data-carousel]');
 
 /* Covers de fallback — usados apenas quando o CMS não tem imagem configurada */
 const currentPortfolioCovers = [
-  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=360&q=60&auto=format&fit=crop&fm=webp',
-  'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=360&q=60&auto=format&fit=crop&fm=webp',
-  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=360&q=60&auto=format&fit=crop&fm=webp',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=360&q=60&auto=format&fit=crop&fm=webp',
-  'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=360&q=60&auto=format&fit=crop&fm=webp',
-  'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=360&q=60&auto=format&fit=crop&fm=webp'
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=45&auto=format,compress&fit=crop&fm=webp',
+  'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300&q=45&auto=format,compress&fit=crop&fm=webp',
+  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=300&q=45&auto=format,compress&fit=crop&fm=webp',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=45&auto=format,compress&fit=crop&fm=webp',
+  'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=300&q=45&auto=format,compress&fit=crop&fm=webp',
+  'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=300&q=45&auto=format,compress&fit=crop&fm=webp'
 ];
 
 /* Vídeos de fallback para o portfólio */
@@ -201,10 +201,15 @@ document.querySelectorAll('.video-card').forEach((card, index) => {
     video.load();
   }
 
-  // Se houver poster configurado no CMS, utiliza-o de imediato; caso contrário, preserva poster ou data-poster
+  // Lazy-load de posters: preserva em data-poster para carregar sob demanda apenas quando entrar no viewport
   const cmsPoster = window.kmCMS?.data?.portfolioVideos?.[index]?.poster;
   if (cmsPoster && !cmsPoster.startsWith('idb:')) {
-    video.poster = cmsPoster;
+    const norm = (typeof normalizeImageUrl === 'function') ? normalizeImageUrl(cmsPoster, 300) : cmsPoster;
+    if (video.poster) {
+      if (video.poster !== norm) video.poster = norm;
+    } else {
+      video.dataset.poster = norm;
+    }
   } else if (!video.poster && !video.dataset.poster) {
     video.dataset.poster = currentPortfolioCovers[index % currentPortfolioCovers.length];
   }
@@ -238,7 +243,7 @@ if ('IntersectionObserver' in window) {
         observer.unobserve(video);
       }
     });
-  }, { rootMargin: '350px 0px' });
+  }, { rootMargin: '250px 0px' });
 
   document.querySelectorAll('.video-card video').forEach((video) => {
     videoPosterObserver.observe(video);

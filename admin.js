@@ -152,12 +152,16 @@ function normalizeImageUrl(url) {
   if (url.includes('images.unsplash.com')) {
     try {
       const u = new URL(url);
-      u.searchParams.set('auto', 'format');
+      u.searchParams.set('auto', 'format,compress');
       u.searchParams.set('fit', 'crop');
       u.searchParams.set('fm', 'webp');
+      const curW = Number(u.searchParams.get('w'));
+      if (!curW || curW > 300) {
+        u.searchParams.set('w', '300');
+      }
       const curQ = Number(u.searchParams.get('q'));
-      if (!curQ || curQ > 65) {
-        u.searchParams.set('q', '60');
+      if (!curQ || curQ > 45) {
+        u.searchParams.set('q', '45');
       }
       return u.toString();
     } catch (_) {

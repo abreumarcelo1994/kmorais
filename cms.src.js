@@ -50,18 +50,18 @@ function normalizeImageUrl(url, maxW) {
     }
     try {
       const u = new URL(url);
-      u.searchParams.set('auto', 'format');
+      u.searchParams.set('auto', 'format,compress');
       u.searchParams.set('fit', 'crop');
       u.searchParams.set('fm', 'webp');
       const curW = Number(u.searchParams.get('w'));
       if (maxW && (!curW || curW > maxW)) {
         u.searchParams.set('w', String(maxW));
-      } else if (!curW || curW > 500) {
-        u.searchParams.set('w', '360');
+      } else if (!curW || curW > 300) {
+        u.searchParams.set('w', '300');
       }
       const curQ = Number(u.searchParams.get('q'));
-      if (!curQ || curQ > 65) {
-        u.searchParams.set('q', '60');
+      if (!curQ || curQ > 45) {
+        u.searchParams.set('q', '45');
       }
       return u.toString();
     } catch (_) {
@@ -624,8 +624,12 @@ class KMCMS {
               window.attachSoundButton(cards[idx], video);
             }
             if (item.poster && !item.poster.startsWith('idb:')) {
-              const normPoster = normalizeImageUrl(item.poster, 360);
-              if (video.poster !== normPoster) video.poster = normPoster;
+              const normPoster = normalizeImageUrl(item.poster, 300);
+              if (video.poster) {
+                if (video.poster !== normPoster) video.poster = normPoster;
+              } else {
+                video.dataset.poster = normPoster;
+              }
             }
             if (item.video && !item.video.startsWith('idb:')) {
               const normVideo = normalizeVideoUrl(item.video);
