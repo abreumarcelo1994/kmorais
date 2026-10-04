@@ -157,6 +157,25 @@ if (fs.existsSync('styles.css')) {
   }
 }
 
+// 7. Verificação de Minificação do JavaScript (Lighthouse CWV)
+console.log('\n7. Verificando minificação de script.js e cms.js...');
+const prodJs = [
+  { name: 'script.js', maxKb: 28 },
+  { name: 'cms.js', maxKb: 28 }
+];
+for (const { name, maxKb } of prodJs) {
+  if (fs.existsSync(name)) {
+    const raw = fs.readFileSync(name, 'utf8');
+    const kb = (raw.length / 1024).toFixed(1);
+    if (raw.length > maxKb * 1024) {
+      console.error(`   ❌ ERRO: ${name} não está minificado (${kb} KB > ${maxKb} KB). Execute 'npm run build:js'!`);
+      hasErrors = true;
+    } else {
+      console.log(`   ✅ ${name} minificado para produção (${kb} KB)`);
+    }
+  }
+}
+
 // Relatório Final
 console.log('\n' + '='.repeat(50));
 if (warnings.length > 0) {

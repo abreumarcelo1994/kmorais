@@ -8,10 +8,11 @@
     "start": "node server.js",
     "serve": "node server.js",
     "build:css": "node scripts/build-css.js",
-    "build": "npm run build:css",
+    "build:js": "node scripts/build-js.js",
+    "build": "npm run build:css && npm run build:js",
     "test": "node -c script.js cms.js admin.js server.js sw.js",
     "audit": "node scripts/audit.js",
-    "validate": "npm run build:css && npm test && npm run audit"
+    "validate": "npm run build && npm test && npm run audit"
   },
   "keywords": [
     "ugc",
@@ -23,6 +24,7 @@
   "author": "Kelly Morais",
   "license": "ISC",
   "devDependencies": {
-    "clean-css": "^5.3.3"
+    "clean-css": "^5.3.3",
+    "terser": "^5.51.2"
   }
 }
