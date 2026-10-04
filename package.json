@@ -7,7 +7,9 @@
     "dev": "node server.js",
     "start": "node server.js",
     "serve": "node server.js",
-    "test": "node -c script.js cms.js admin.js server.js"
+    "test": "node -c script.js cms.js admin.js server.js sw.js",
+    "audit": "node scripts/audit.js",
+    "validate": "npm test && npm run audit"
   },
   "keywords": [
     "ugc",
