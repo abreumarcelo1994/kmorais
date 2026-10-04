@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-04T01:21:43.143Z",
+  "updatedAt": "2026-10-04T02:16:11.287Z",
   "hero": {
     "eyebrow": "KELLY MORAIS · CREATOR + MARKETING",
     "title": "Conteúdo que<br><em>parece conversa</em><br>e gera ação.",
@@ -96,12 +96,12 @@
       "label": "antes & depois"
     },
     {
-      "video": "idb:video_1791075511188_vhwl",
+      "video": "https://res.cloudinary.com/demo/video/upload/q_auto,w_400/elephants.mp4",
       "poster": "https://kellymorais.com.br/media/1790975104273_488d2f19-af60-4658-9767-23593d700dac.webp",
       "label": "look do dia"
     },
     {
-      "video": "idb:video_1791075400204_0iza",
+      "video": "https://res.cloudinary.com/demo/video/upload/q_auto,w_400/finish_line.mp4",
       "poster": "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=360&q=60&auto=format&fit=crop&fm=webp",
       "label": "provador real"
     },
