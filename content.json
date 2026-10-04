@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-04T00:57:40.287Z",
+  "updatedAt": "2026-10-04T01:21:24.092Z",
   "hero": {
     "eyebrow": "KELLY MORAIS · CREATOR + MARKETING",
     "title": "Conteúdo que<br><em>parece conversa</em><br>e gera ação.",
@@ -96,12 +96,12 @@
       "label": "antes & depois"
     },
     {
-      "video": "https://kellymorais.com.br/media/1790975094368_img_3436.mov",
+      "video": "idb:video_1791075511188_vhwl",
       "poster": "https://kellymorais.com.br/media/1790975104273_488d2f19-af60-4658-9767-23593d700dac.webp",
       "label": "look do dia"
     },
     {
-      "video": "https://res.cloudinary.com/demo/video/upload/q_auto,w_400/finish_line.mp4",
+      "video": "idb:video_1791075400204_0iza",
       "poster": "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=360&q=60&auto=format&fit=crop&fm=webp",
       "label": "provador real"
     },
@@ -253,42 +253,42 @@
   ],
   "instagramPosts": [
     {
-      "image": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=60&auto=format&fit=crop&fm=webp",
+      "image": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&q=60&auto=format&fit=crop&fm=webp",
       "link": "https://www.instagram.com/kemoraiso/reel/Dc4TsgNhvXy/",
       "label": ""
     },
     {
-      "image": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&q=60&auto=format&fit=crop&fm=webp",
+      "image": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&q=60&auto=format&fit=crop&fm=webp",
       "link": "https://www.instagram.com/kemoraiso/reel/DdFP3quBgB9/",
       "label": ""
     },
     {
-      "image": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&q=60&auto=format&fit=crop&fm=webp",
+      "image": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&q=60&auto=format&fit=crop&fm=webp",
       "link": "https://www.instagram.com/kemoraiso/reel/DctXke_BpJF/",
       "label": ""
     },
     {
-      "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=60&auto=format&fit=crop&fm=webp",
+      "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=60&auto=format&fit=crop&fm=webp",
       "link": "https://www.instagram.com/kemoraiso/reel/Dbto7oNho3o/",
       "label": ""
     },
     {
-      "image": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&q=60&auto=format&fit=crop&fm=webp",
+      "image": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600&q=60&auto=format&fit=crop&fm=webp",
       "link": "https://www.instagram.com/kemoraiso/reel/Dav1BwnB8S4/",
       "label": ""
     },
     {
-      "image": "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400&q=60&auto=format&fit=crop&fm=webp",
+      "image": "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=600&q=60&auto=format&fit=crop&fm=webp",
       "link": "https://www.instagram.com/kemoraiso/reel/DcRrZvuh33B/",
       "label": ""
     },
     {
-      "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=60&auto=format&fit=crop&fm=webp",
+      "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&q=60&auto=format&fit=crop&fm=webp",
       "link": "https://www.instagram.com/kemoraiso/reel/DY65T1vu4bn/",
       "label": ""
     },
     {
-      "image": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&q=60&auto=format&fit=crop&fm=webp",
+      "image": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600&q=60&auto=format&fit=crop&fm=webp",
       "link": "https://www.instagram.com/kemoraiso/reel/Daan3KYuQgw/",
       "label": ""
     }
