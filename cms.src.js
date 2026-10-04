@@ -448,8 +448,8 @@ class KMCMS {
         return published;
       }
 
-      // Se os dados publicados no GitHub forem mais recentes ou se o visitante não tiver nada local:
-      if (!localSaved || (publishedTimestamp && publishedTimestamp > localTimestamp)) {
+      // Se os dados publicados no GitHub forem diferentes do que está em cache (outro aparelho salvou):
+      if (!localSaved || (publishedTimestamp && publishedTimestamp !== localTimestamp)) {
         this.data = deepMerge(defaultCMSContent, published);
         localStorage.setItem(KM_CMS_STORAGE_KEY, JSON.stringify(this.data));
         if (publishedTimestamp) {

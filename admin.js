@@ -278,14 +278,15 @@ function convertImageToWebp(file, maxWidth = 800, quality = 0.72) {
 function getPortableMediaVal(primaryVal, fallbackIdbId) {
   if (primaryVal && typeof primaryVal === 'string') {
     const trimmed = primaryVal.trim();
-    if (trimmed.startsWith('data:') || trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('media/') || trimmed.startsWith('./') || trimmed.startsWith('/')) {
+    if (trimmed.startsWith('data:image/') && trimmed.length < 250000) {
+      return trimmed;
+    }
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('media/') || trimmed.startsWith('./') || trimmed.startsWith('/')) {
       return trimmed;
     }
   }
-  if (fallbackIdbId && typeof fallbackIdbId === 'string' && fallbackIdbId.startsWith('idb:')) {
-    return fallbackIdbId;
-  }
-  return (primaryVal && !primaryVal.startsWith('blob:')) ? primaryVal : '';
+  // Bloqueio rigoroso: NUNCA salvar idb: nem blob: no content.json de produção
+  return '';
 }
 
 /**
@@ -295,7 +296,15 @@ function getPortableMediaVal(primaryVal, fallbackIdbId) {
  */
 async function uploadFileToGitHub(file, onProgress) {
   const cfg = getGitHubConfig();
-  if (!cfg || !cfg.token) return null;
+  if (!cfg || !cfg.token || cfg.token.includes('*')) {
+    throw new Error('Dispositivo sem token do GitHub configurado. Conecte o GitHub no botão superior para enviar arquivos para a nuvem.');
+  }
+
+  // Limite da API do GitHub para criação de arquivos é de 25MB (base64 fica ~33MB)
+  const maxBytes = 24 * 1024 * 1024;
+  if (file.size > maxBytes) {
+    throw new Error(`O arquivo selecionado (${formatFileSize(file.size)}) excede o limite de 25 MB do GitHub via navegador. Para vídeos pesados, recomendamos hospedar no Google Drive, Dropbox ou Cloudinary e colar o link.`);
+  }
 
   // Se for imagem (exceto SVG), converte e otimiza para WebP antes do envio
   if (file && file.type && file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
@@ -312,13 +321,15 @@ async function uploadFileToGitHub(file, onProgress) {
 
   if (onProgress) onProgress('Convertendo arquivo...');
 
-  // 1. Ler o arquivo como ArrayBuffer e converter para base64 com segurança
-  //    (NÃO usar spread ...uint8 em fromCharCode — estoura a pilha em arquivos maiores que ~64KB)
+  // 1. Ler o arquivo como ArrayBuffer e converter para base64 em blocos de 8KB (ultra-rápido e seguro contra estouro de memória)
   const arrayBuffer = await file.arrayBuffer();
   const uint8 = new Uint8Array(arrayBuffer);
   let binary = '';
-  for (let i = 0; i < uint8.length; i++) {
-    binary += String.fromCharCode(uint8[i]);
+  const chunkSize = 8192;
+  const len = uint8.length;
+  for (let i = 0; i < len; i += chunkSize) {
+    const chunk = uint8.subarray(i, Math.min(i + chunkSize, len));
+    binary += String.fromCharCode.apply(null, chunk);
   }
   const base64Content = btoa(binary);
 
@@ -495,11 +506,66 @@ class KMAdminPanel {
     this.setupMediaModal();
     this.setupGitHubSync();
     this.setupJSONBackup();
+    this.updateGitHubWarningBar();
+    this.syncRemoteContentOnLoad();
+  }
+
+  updateGitHubWarningBar() {
+    const warnBar = document.getElementById('admin-gh-warning-bar');
+    if (!warnBar) return;
+    const cfg = getGitHubConfig();
+    const isConnected = cfg && cfg.token && !cfg.token.includes('*');
+    if (isConnected) {
+      warnBar.classList.add('is-hidden');
+    } else {
+      warnBar.classList.remove('is-hidden');
+    }
+  }
+
+  async syncRemoteContentOnLoad() {
+    try {
+      const res = await fetch(`content.json?_t=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) return;
+      const remote = await res.json();
+      if (!remote || !remote.updatedAt) return;
+
+      const localSaved = localStorage.getItem(KM_CMS_STORAGE_KEY);
+      let localTimestamp = 0;
+      if (localSaved) {
+        try {
+          const parsed = JSON.parse(localSaved);
+          localTimestamp = parsed.updatedAt ? new Date(parsed.updatedAt).getTime() : 0;
+        } catch (_) {}
+      }
+
+      const remoteTimestamp = new Date(remote.updatedAt).getTime();
+      // Se a nuvem tiver dados mais recentes ou se não houver dados locais, sincroniza o painel
+      if (!localSaved || remoteTimestamp > localTimestamp) {
+        console.log('[Admin] Conteúdo mais recente detectado no GitHub. Sincronizando tela...');
+        if (window.kmCMS) {
+          window.kmCMS.data = deepMerge(defaultCMSContent, remote);
+          localStorage.setItem(KM_CMS_STORAGE_KEY, JSON.stringify(window.kmCMS.data));
+          localStorage.setItem(KM_CMS_SYNC_KEY, String(remoteTimestamp));
+          await window.kmCMS.applyToPage();
+          this.showToast('ℹ️ Painel sincronizado com a versão mais recente da nuvem.');
+        }
+      }
+    } catch (e) {
+      console.warn('[Admin] Não foi possível verificar dados remotos no início:', e);
+    }
   }
 
   setupEditableElements() {
     if (this._editableDone) return;
     this._editableDone = true;
+
+    // Alerta de fechamento acidental com alterações pendentes
+    window.addEventListener('beforeunload', (e) => {
+      if (this.hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = 'Você tem alterações pendentes que ainda não foram salvas e publicadas.';
+      }
+    });
 
     // Lista de seletores de textos editáveis seguros
     const textSelectors = [
@@ -530,6 +596,12 @@ class KMAdminPanel {
         el.setAttribute('spellcheck', 'false');
         el.setAttribute('data-editable', 'text');
 
+        // Detecta digitação e aciona o pulso de salvar
+        el.addEventListener('input', () => {
+          document.body.classList.add('has-unsaved-changes');
+          this.hasUnsavedChanges = true;
+        });
+
         // Previne navegação se o elemento for um link enquanto edita
         el.addEventListener('click', (e) => {
           if (el.tagName === 'A') {
@@ -542,6 +614,8 @@ class KMAdminPanel {
           e.preventDefault();
           const text = (e.originalEvent || e).clipboardData.getData('text/plain');
           document.execCommand('insertText', false, text);
+          document.body.classList.add('has-unsaved-changes');
+          this.hasUnsavedChanges = true;
         });
       });
     });
@@ -947,6 +1021,11 @@ class KMAdminPanel {
     document.getElementById('admin-fab-save-btn')?.addEventListener('click', () => {
       this.saveAllChanges();
     });
+
+    // Botão de conexão no banner de alerta
+    document.getElementById('admin-gh-warning-connect-btn')?.addEventListener('click', () => {
+      document.getElementById('admin-gh-config-btn')?.click();
+    });
   }
 
 
@@ -1096,59 +1175,53 @@ class KMAdminPanel {
           const isVideoFileTab = videoGroup?.querySelector('.admin-tab-btn[data-tab="file"]')?.classList.contains('is-active');
           const isPosterFileTab = posterGroup?.querySelector('.admin-tab-btn[data-tab="file"]')?.classList.contains('is-active');
 
+          const cfg = getGitHubConfig();
+          const hasGhToken = cfg && cfg.token && !cfg.token.includes('*');
+
+          // Validação mandatória: impede upload de mídias locais sem token do GitHub
+          if ((isVideoFileTab && this.selectedVideoFile) || (isPosterFileTab && this.selectedPosterFile)) {
+            if (!hasGhToken) {
+              saveBtn.disabled = false;
+              saveBtn.textContent = 'Aplicar';
+              alert('⛔ Conexão com o GitHub Obrigatória:\n\nPara que o arquivo suba para o site oficial e fique visível para outros visitantes em qualquer aparelho, este dispositivo precisa estar conectado ao GitHub.\n\nPor favor, conecte o Token do GitHub agora para habilitar o envio.');
+              document.getElementById('admin-github-modal')?.classList.remove('is-hidden');
+              document.getElementById('admin-github-modal')?.classList.add('is-open');
+              return;
+            }
+          }
+
           let rawVideoUrl = document.getElementById('admin-modal-video-url')?.value.trim() || '';
           let finalVideoUrl = normalizeVideoUrl(rawVideoUrl);
           let finalVideoId = null;
 
           if (isVideoFileTab && this.selectedVideoFile) {
-            // Tenta fazer upload para o GitHub primeiro (URL pública para qualquer dispositivo)
             try {
-              saveBtn.textContent = 'Enviando vídeo...';
+              saveBtn.textContent = 'Enviando vídeo para o GitHub...';
               const ghUrl = await uploadFileToGitHub(
                 this.selectedVideoFile,
                 (msg) => setProgress('video-file-name', msg)
               );
               if (ghUrl) {
                 finalVideoUrl = ghUrl;
-                finalVideoId = null; // URL pública não precisa de idb
-                // Limpa idb antigo se existia
+                finalVideoId = null;
                 if (this.currentEditingMedia.currentVideoId) {
-                  await kmMediaStore.deleteMedia(this.currentEditingMedia.currentVideoId).catch(() => {});
-                }
-              } else {
-                // Sem token GitHub: salva no IndexedDB como fallback local
-                const mediaId = `idb:video_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-                await kmMediaStore.saveMedia(mediaId, this.selectedVideoFile, this.selectedVideoFile.type);
-                finalVideoUrl = URL.createObjectURL(this.selectedVideoFile);
-                finalVideoId = mediaId;
-                if (this.currentEditingMedia.currentVideoId && this.currentEditingMedia.currentVideoId !== mediaId) {
                   await kmMediaStore.deleteMedia(this.currentEditingMedia.currentVideoId).catch(() => {});
                 }
               }
             } catch (uploadErr) {
               console.error('Erro no upload do vídeo para GitHub:', uploadErr);
-              // Fallback: IndexedDB local
-              const mediaId = `idb:video_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-              await kmMediaStore.saveMedia(mediaId, this.selectedVideoFile, this.selectedVideoFile.type);
-              finalVideoUrl = URL.createObjectURL(this.selectedVideoFile);
-              finalVideoId = mediaId;
-              if (this.currentEditingMedia.currentVideoId && this.currentEditingMedia.currentVideoId !== mediaId) {
-                await kmMediaStore.deleteMedia(this.currentEditingMedia.currentVideoId).catch(() => {});
-              }
-              alert(`Aviso: o vídeo foi salvo localmente, mas o upload para o GitHub falhou. Ele não aparecerá em outros dispositivos.
-
-Detalhes: ${uploadErr.message}`);
+              saveBtn.disabled = false;
+              saveBtn.textContent = 'Aplicar';
+              alert(`❌ Falha no envio do vídeo para o GitHub:\n\n${uploadErr.message}`);
+              return;
             }
           } else if (isVideoFileTab && this.currentEditingMedia.currentVideoId && !finalVideoUrl) {
-            // Aba arquivo ativa mas nenhum novo arquivo selecionado: mantém o existente
             finalVideoId = this.currentEditingMedia.currentVideoId;
             finalVideoUrl = await kmMediaStore.resolveUrl(finalVideoId);
           } else if (!isVideoFileTab && rawVideoUrl && this.currentEditingMedia.currentVideoId) {
-            // Aba URL ativa E usuário preencheu uma URL nova: apaga o idb antigo
             await kmMediaStore.deleteMedia(this.currentEditingMedia.currentVideoId).catch(() => {});
             finalVideoId = null;
           } else if (!isVideoFileTab) {
-            // Aba URL ativa mas sem URL nova: mantém o que estava (não apaga nada)
             finalVideoId = null;
           }
 
@@ -1157,7 +1230,6 @@ Detalhes: ${uploadErr.message}`);
           let finalPosterId = null;
 
           if (isPosterFileTab && this.selectedPosterFile) {
-            // Tenta fazer upload para o GitHub primeiro (como WebP otimizado)
             try {
               saveBtn.textContent = 'Enviando imagem (WebP)...';
               const ghUrl = await uploadFileToGitHub(
@@ -1166,49 +1238,25 @@ Detalhes: ${uploadErr.message}`);
               );
               if (ghUrl) {
                 finalPosterUrl = ghUrl;
-                finalPosterId = null; // URL pública não precisa de idb
-                // Limpa idb antigo se existia
+                finalPosterId = null;
                 if (this.currentEditingMedia.currentPosterId) {
-                  await kmMediaStore.deleteMedia(this.currentEditingMedia.currentPosterId).catch(() => {});
-                }
-              } else {
-                // Sem token GitHub: converte para WebP e salva como base64 (funciona em todos dispositivos)
-                const webpRes = await convertImageToWebp(this.selectedPosterFile, 600, 0.70);
-                finalPosterUrl = webpRes?.dataUrl || URL.createObjectURL(this.selectedPosterFile);
-                const mediaId = `idb:img_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-                const fileToSave = webpRes?.file || this.selectedPosterFile;
-                await kmMediaStore.saveMedia(mediaId, fileToSave, fileToSave.type);
-                finalPosterId = mediaId;
-                if (this.currentEditingMedia.currentPosterId && this.currentEditingMedia.currentPosterId !== mediaId) {
                   await kmMediaStore.deleteMedia(this.currentEditingMedia.currentPosterId).catch(() => {});
                 }
               }
             } catch (uploadErr) {
               console.error('Erro no upload da imagem para GitHub:', uploadErr);
-              // Fallback: comprime para base64 WebP (portável, sem dependência de dispositivo)
-              const webpRes = await convertImageToWebp(this.selectedPosterFile, 600, 0.70);
-              finalPosterUrl = webpRes?.dataUrl || URL.createObjectURL(this.selectedPosterFile);
-              const mediaId = `idb:img_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-              const fileToSave = webpRes?.file || this.selectedPosterFile;
-              await kmMediaStore.saveMedia(mediaId, fileToSave, fileToSave.type);
-              finalPosterId = mediaId;
-              if (this.currentEditingMedia.currentPosterId && this.currentEditingMedia.currentPosterId !== mediaId) {
-                await kmMediaStore.deleteMedia(this.currentEditingMedia.currentPosterId).catch(() => {});
-              }
-              alert(`Aviso: o upload para GitHub falhou. A imagem foi salva em formato WebP como base64 e continuará funcionando.
-
-Detalhes: ${uploadErr.message}`);
+              saveBtn.disabled = false;
+              saveBtn.textContent = 'Aplicar';
+              alert(`❌ Falha no envio da imagem para o GitHub:\n\n${uploadErr.message}`);
+              return;
             }
           } else if (isPosterFileTab && this.currentEditingMedia.currentPosterId && !finalPosterUrl) {
-            // Aba arquivo ativa mas nenhuma nova imagem selecionada: mantém a existente
             finalPosterId = this.currentEditingMedia.currentPosterId;
             finalPosterUrl = await kmMediaStore.resolveUrl(finalPosterId);
           } else if (!isPosterFileTab && rawPosterUrl && this.currentEditingMedia.currentPosterId) {
-            // Aba URL ativa E usuário preencheu uma URL nova: apaga o idb antigo
             await kmMediaStore.deleteMedia(this.currentEditingMedia.currentPosterId).catch(() => {});
             finalPosterId = null;
           } else if (!isPosterFileTab) {
-            // Aba URL ativa mas sem URL nova: mantém o que estava (não apaga nada)
             finalPosterId = null;
           }
 
@@ -1226,8 +1274,10 @@ Detalhes: ${uploadErr.message}`);
             });
           }
 
+          document.body.classList.add('has-unsaved-changes');
+          this.hasUnsavedChanges = true;
           closeModal();
-          this.showToast('✓ Mídia atualizada no card!');
+          this.showToast('✓ Mídia aplicada no card! Clique em "💾 Salvar e Publicar" no topo para colocar no ar.');
         } catch (err) {
           console.error('Erro ao processar mídia:', err);
           alert('Houve um erro ao processar a mídia. Tente novamente.');
@@ -1761,10 +1811,14 @@ Detalhes: ${uploadErr.message}`);
       const ghResult = await this.publishToGitHub(contentToSave);
 
       if (ghResult.ok) {
+        document.body.classList.remove('has-unsaved-changes');
+        this.hasUnsavedChanges = false;
+        this.updateGitHubWarningBar();
         this.showToast('🚀 Salvo no GitHub com sucesso! O site oficial já está atualizando.');
       } else if (ghResult.missingConfig) {
-        this.showToast('⚠️ Salvo localmente! Conecte seu Token do GitHub para subir direto.');
+        this.showToast('⚠️ Salvo apenas localmente! Conecte seu Token do GitHub para subir no site oficial.');
         document.getElementById('admin-github-modal')?.classList.remove('is-hidden');
+        document.getElementById('admin-github-modal')?.classList.add('is-open');
       } else {
         console.warn('GitHub publish warning status:', ghResult.status, ghResult.message);
         if (ghResult.status === 401) {
@@ -1900,6 +1954,7 @@ Detalhes: ${uploadErr.message}`);
 
         saveGitHubConfig({ token, repo, branch, path });
         updateBtnState();
+        this.updateGitHubWarningBar();
         this.showToast('✓ Configuração do GitHub salva com sucesso!');
         closeModal();
       });

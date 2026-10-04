@@ -42,20 +42,26 @@ if (fs.existsSync('content.json')) {
       hasErrors = true;
     }
 
-    // Varre se há base64 embutido
-    function checkBase64(obj, path = '') {
+    // Varre se há base64 embutido ou identificadores locais idb:/blob:
+    function checkMediaPortability(obj, path = '') {
       for (const k in obj) {
         const val = obj[k];
         const currentPath = path ? `${path}.${k}` : k;
-        if (typeof val === 'string' && val.startsWith('data:image/') && val.length > 5000) {
-          console.error(`   ❌ ERRO: Base64 pesado detectado em ${currentPath} (${(val.length / 1024).toFixed(1)} KB)`);
-          hasErrors = true;
+        if (typeof val === 'string') {
+          if (val.startsWith('idb:') || val.startsWith('blob:')) {
+            console.error(`   ❌ ERRO: Referência local não portável detectada em ${currentPath}: "${val}". Deve ser URL pública ou caminho relativo!`);
+            hasErrors = true;
+          }
+          if (val.startsWith('data:image/') && val.length > 5000) {
+            console.error(`   ❌ ERRO: Base64 pesado detectado em ${currentPath} (${(val.length / 1024).toFixed(1)} KB)`);
+            hasErrors = true;
+          }
         } else if (typeof val === 'object' && val) {
-          checkBase64(val, currentPath);
+          checkMediaPortability(val, currentPath);
         }
       }
     }
-    checkBase64(data);
+    checkMediaPortability(data);
 
     // Verifica parâmetros Unsplash no content.json
     function checkUnsplash(obj) {

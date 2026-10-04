@@ -1271,3 +1271,90 @@ body.is-admin-mode .site-header {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---- Banner de Alerta: GitHub Desconectado ---- */
+.admin-gh-warning-bar {
+  position: sticky;
+  top: 56px;
+  z-index: 9998;
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.95), rgba(185, 28, 28, 0.95));
+  color: #ffffff;
+  padding: 10px 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.admin-gh-warning-bar.is-hidden {
+  display: none !important;
+}
+
+.admin-gh-warning-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.admin-gh-warning-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.admin-gh-warning-text {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #fff;
+  flex: 1 1 300px;
+}
+
+.admin-gh-warning-text strong {
+  color: #fef08a;
+  font-weight: 700;
+}
+
+.admin-gh-warning-text em {
+  font-style: normal;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.admin-gh-warning-btn {
+  background: #ffffff;
+  color: #b91c1c;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, transform 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.admin-gh-warning-btn:hover {
+  background: #fef08a;
+  transform: translateY(-1px);
+}
+
+/* Indicador de Alterações Pendentes de Publicação */
+body.has-unsaved-changes #admin-save-btn,
+body.has-unsaved-changes #admin-save-btn-mobile,
+body.has-unsaved-changes #admin-fab-save-btn {
+  animation: adminPulseSave 1.8s infinite !important;
+  box-shadow: 0 0 16px rgba(214, 238, 130, 0.6) !important;
+}
+
+@keyframes adminPulseSave {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
