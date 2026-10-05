@@ -249,6 +249,73 @@ async function verifyPublicImage(url, onProgress) {
   throw new Error('O GitHub recebeu a imagem, mas ela não abriu publicamente após algumas tentativas. Ela não foi aplicada ao site; tente novamente em instantes.');
 }
 
+async function githubApiRequest(cfg, endpoint, method = 'GET', payload = null) {
+  const response = await fetch(`https://api.github.com/repos/${cfg.repo}/${endpoint}`, {
+    method,
+    headers: {
+      'Authorization': `Bearer ${cfg.token}`,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+      'X-GitHub-Api-Version': '2022-11-28'
+    },
+    ...(payload ? { body: JSON.stringify(payload) } : {})
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error('(401) Bad credentials — O token do GitHub inserido é inválido ou expirou.');
+    }
+    const error = new Error(`GitHub API falhou (${response.status}): ${data.message || 'erro desconhecido'}`);
+    error.status = response.status;
+    throw error;
+  }
+  return data;
+}
+
+async function uploadLargeFileToGitHub(cfg, filePath, base64Content, onProgress) {
+  const branch = cfg.branch || 'main';
+  const branchRef = `heads/${branch.split('/').map(encodeURIComponent).join('/')}`;
+
+  if (onProgress) onProgress('Preparando vídeo grande no GitHub...');
+  const blob = await githubApiRequest(cfg, 'git/blobs', 'POST', {
+    content: base64Content,
+    encoding: 'base64'
+  });
+
+  let lastError;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const refData = await githubApiRequest(cfg, `git/ref/${branchRef}`);
+    const parentSha = refData.object?.sha;
+    if (!parentSha) throw new Error('Não foi possível localizar a versão atual do branch no GitHub.');
+
+    const parentCommit = await githubApiRequest(cfg, `git/commits/${parentSha}`);
+    const tree = await githubApiRequest(cfg, 'git/trees', 'POST', {
+      base_tree: parentCommit.tree.sha,
+      tree: [{ path: filePath, mode: '100644', type: 'blob', sha: blob.sha }]
+    });
+    const commit = await githubApiRequest(cfg, 'git/commits', 'POST', {
+      message: 'media: upload de video grande via painel administrativo',
+      tree: tree.sha,
+      parents: [parentSha]
+    });
+
+    try {
+      await githubApiRequest(cfg, `git/refs/${branchRef}`, 'PATCH', {
+        sha: commit.sha,
+        force: false
+      });
+      return commit;
+    } catch (error) {
+      lastError = error;
+      if (![409, 422].includes(error.status) || attempt === 2) throw error;
+      if (onProgress) onProgress('Houve outro salvamento; sincronizando e tentando novamente...');
+      await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+    }
+  }
+
+  throw lastError || new Error('Não foi possível publicar o vídeo grande no GitHub.');
+}
+
 /**
  * Converte qualquer arquivo de imagem para o padrão WebP diretamente no navegador.
  * - Vetores SVG são mantidos como SVG puros para máxima nitidez vetorial.
@@ -383,8 +450,8 @@ async function uploadFileToGitHub(file, onProgress) {
   const isImage = Boolean(imageMimeType);
   if (isImage) file = withImageMimeType(file, imageMimeType);
 
-  // Limite da API do GitHub para criação de arquivos é de 25MB (base64 fica ~33MB)
-  const maxBytes = 24 * 1024 * 1024;
+  const maxBytes = 70 * 1024 * 1024;
+  const contentsApiMaxBytes = 24 * 1024 * 1024;
 
   // Se for imagem (exceto SVG), converte e otimiza para WebP antes do envio
   if (isImage && imageMimeType !== 'image/svg+xml' && imageMimeType !== 'image/webp') {
@@ -400,7 +467,7 @@ async function uploadFileToGitHub(file, onProgress) {
   }
 
   if (file.size > maxBytes) {
-    throw new Error(`O arquivo selecionado (${formatFileSize(file.size)}) excede o limite de 25 MB do GitHub via navegador. Para vídeos pesados, recomendamos hospedar no Google Drive, Dropbox ou Cloudinary e colar o link.`);
+    throw new Error(`O limite deste painel é de 70 MiB por arquivo. Para vídeos maiores, hospede no Cloudinary, Google Drive ou Dropbox e cole o link.`);
   }
 
   if (onProgress) onProgress('Convertendo arquivo...');
@@ -433,9 +500,9 @@ async function uploadFileToGitHub(file, onProgress) {
 
   if (onProgress) onProgress('Enviando para o GitHub...');
 
-  // 3. Verificar se já existe (precisa do SHA para atualizar)
+  // 3. Verificar se já existe (precisa do SHA para atualizar pelo Contents API)
   let existingSha = null;
-  try {
+  if (file.size <= contentsApiMaxBytes) try {
     const checkRes = await fetch(
       `https://api.github.com/repos/${cfg.repo}/contents/${filePath}?ref=${cfg.branch}&_t=${ts}`,
       {
@@ -453,7 +520,7 @@ async function uploadFileToGitHub(file, onProgress) {
     }
   } catch (_) {}
 
-  // 4. Fazer o PUT para criar/atualizar o arquivo no repositório
+  // 4. Arquivos pequenos usam Contents API; arquivos grandes usam Git Data API.
   const payload = {
     message: `media: upload de midia via painel administrativo`,
     content: base64Content,
@@ -461,29 +528,36 @@ async function uploadFileToGitHub(file, onProgress) {
   };
   if (existingSha) payload.sha = existingSha;
 
-  const putRes = await fetch(
-    `https://api.github.com/repos/${cfg.repo}/contents/${filePath}`,
-    {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${cfg.token}`,
-        'Accept': 'application/vnd.github+json',
-        'Content-Type': 'application/json',
-        'X-GitHub-Api-Version': '2022-11-28'
-      },
-      body: JSON.stringify(payload)
-    }
-  );
+  let putData;
+  if (file.size > contentsApiMaxBytes) {
+    putData = {
+      commit: await uploadLargeFileToGitHub(cfg, filePath, base64Content, onProgress)
+    };
+  } else {
+    const putRes = await fetch(
+      `https://api.github.com/repos/${cfg.repo}/contents/${filePath}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${cfg.token}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json',
+          'X-GitHub-Api-Version': '2022-11-28'
+        },
+        body: JSON.stringify(payload)
+      }
+    );
 
-  if (!putRes.ok) {
-    const err = await putRes.json().catch(() => ({}));
-    if (putRes.status === 401) {
-      throw new Error(`(401) Bad credentials — O token do GitHub inserido é inválido, expirou ou foi copiado com asteriscos. Se você copiou da tela de edição do GitHub, clique em "Regenerate token" para gerar um código visível.`);
+    if (!putRes.ok) {
+      const err = await putRes.json().catch(() => ({}));
+      if (putRes.status === 401) {
+        throw new Error(`(401) Bad credentials — O token do GitHub inserido é inválido, expirou ou foi copiado com asteriscos. Se você copiou da tela de edição do GitHub, clique em "Regenerate token" para gerar um código visível.`);
+      }
+      throw new Error(`GitHub upload falhou (${putRes.status}): ${err.message || 'erro desconhecido'}`);
     }
-    throw new Error(`GitHub upload falhou (${putRes.status}): ${err.message || 'erro desconhecido'}`);
+
+    putData = await putRes.json().catch(() => ({}));
   }
-
-  const putData = await putRes.json().catch(() => ({}));
 
   // Imagens usam GitHub Raw; vídeos continuam no GitHub Pages.
   const [owner, repoName] = (cfg.repo || '').split('/');
