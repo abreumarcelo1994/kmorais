@@ -184,6 +184,71 @@ function normalizeImageUrl(url) {
   return url;
 }
 
+function getImageMimeType(file) {
+  if (!file) return '';
+  const declaredType = typeof file.type === 'string' ? file.type.toLowerCase() : '';
+  if (declaredType.startsWith('image/')) return declaredType;
+
+  const extension = String(file.name || '').split('.').pop().toLowerCase();
+  const imageTypes = {
+    avif: 'image/avif',
+    bmp: 'image/bmp',
+    gif: 'image/gif',
+    jpeg: 'image/jpeg',
+    jpg: 'image/jpeg',
+    png: 'image/png',
+    svg: 'image/svg+xml',
+    webp: 'image/webp'
+  };
+  return imageTypes[extension] || '';
+}
+
+function withImageMimeType(file, mimeType) {
+  if (!mimeType || file.type === mimeType) return file;
+  return new File([file], file.name, { type: mimeType, lastModified: file.lastModified });
+}
+
+async function verifyPublicImage(url, onProgress) {
+  const retryDelays = [0, 500, 1200];
+  let lastUrl = url;
+
+  for (let attempt = 0; attempt < retryDelays.length; attempt += 1) {
+    if (retryDelays[attempt]) {
+      await new Promise(resolve => setTimeout(resolve, retryDelays[attempt]));
+    }
+
+    lastUrl = attempt === 0
+      ? url
+      : `${url}${url.includes('?') ? '&' : '?'}verify=${Date.now()}-${attempt}`;
+    if (onProgress) onProgress(`Verificando acesso público à imagem (${attempt + 1}/${retryDelays.length})...`);
+
+    try {
+      await new Promise((resolve, reject) => {
+        const image = new Image();
+        const timeoutId = setTimeout(() => {
+          image.onload = null;
+          image.onerror = null;
+          reject(new Error('Tempo limite ao carregar imagem'));
+        }, 10000);
+
+        image.onload = () => {
+          clearTimeout(timeoutId);
+          if (image.naturalWidth > 0) resolve();
+          else reject(new Error('A imagem carregou sem dimensões válidas'));
+        };
+        image.onerror = () => {
+          clearTimeout(timeoutId);
+          reject(new Error('A URL pública ainda não está acessível'));
+        };
+        image.src = lastUrl;
+      });
+      return lastUrl;
+    } catch (_) {}
+  }
+
+  throw new Error('O GitHub recebeu a imagem, mas ela não abriu publicamente após algumas tentativas. Ela não foi aplicada ao site; tente novamente em instantes.');
+}
+
 /**
  * Converte qualquer arquivo de imagem para o padrão WebP diretamente no navegador.
  * - Vetores SVG são mantidos como SVG puros para máxima nitidez vetorial.
@@ -193,13 +258,15 @@ function normalizeImageUrl(url) {
  */
 function convertImageToWebp(file, maxWidth = 800, quality = 0.72) {
   return new Promise((resolve, reject) => {
-    if (!file || !file.type || !file.type.startsWith('image/')) {
+    const imageMimeType = getImageMimeType(file);
+    if (!imageMimeType) {
       resolve(null);
       return;
     }
+    file = withImageMimeType(file, imageMimeType);
 
     // Para SVGs, preserva vetor puro sem perda
-    if (file.type === 'image/svg+xml') {
+    if (imageMimeType === 'image/svg+xml') {
       const reader = new FileReader();
       reader.onload = (e) => resolve({
         file,
@@ -299,8 +366,8 @@ function getPortableMediaVal(primaryVal, fallbackIdbId) {
 }
 
 /**
- * Faz upload de um arquivo diretamente para o repositório do GitHub (pasta media/),
- * retornando a URL pública do GitHub Pages que funciona em qualquer dispositivo.
+ * Faz upload de uma mídia para media/ e retorna uma URL pública validada.
+ * Imagens usam GitHub Raw imutável; vídeos usam GitHub Pages.
  * Retorna null se o token não estiver configurado.
  */
 async function uploadFileToGitHub(file, onProgress) {
@@ -308,15 +375,19 @@ async function uploadFileToGitHub(file, onProgress) {
   if (!cfg || !cfg.token || cfg.token.includes('*')) {
     throw new Error('Dispositivo sem token do GitHub configurado. Conecte o GitHub no botão superior para enviar arquivos para a nuvem.');
   }
+  if (!file || typeof file.arrayBuffer !== 'function') {
+    throw new Error('Arquivo de mídia inválido. Selecione a imagem ou o vídeo novamente.');
+  }
+
+  const imageMimeType = getImageMimeType(file);
+  const isImage = Boolean(imageMimeType);
+  if (isImage) file = withImageMimeType(file, imageMimeType);
 
   // Limite da API do GitHub para criação de arquivos é de 25MB (base64 fica ~33MB)
   const maxBytes = 24 * 1024 * 1024;
-  if (file.size > maxBytes) {
-    throw new Error(`O arquivo selecionado (${formatFileSize(file.size)}) excede o limite de 25 MB do GitHub via navegador. Para vídeos pesados, recomendamos hospedar no Google Drive, Dropbox ou Cloudinary e colar o link.`);
-  }
 
   // Se for imagem (exceto SVG), converte e otimiza para WebP antes do envio
-  if (file && file.type && file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
+  if (isImage && imageMimeType !== 'image/svg+xml' && imageMimeType !== 'image/webp') {
     if (onProgress) onProgress('Otimizando imagem para WebP...');
     try {
       const webpResult = await convertImageToWebp(file, 600, 0.70);
@@ -326,6 +397,10 @@ async function uploadFileToGitHub(file, onProgress) {
     } catch (e) {
       console.warn('Falha na conversão WebP, enviando arquivo original:', e);
     }
+  }
+
+  if (file.size > maxBytes) {
+    throw new Error(`O arquivo selecionado (${formatFileSize(file.size)}) excede o limite de 25 MB do GitHub via navegador. Para vídeos pesados, recomendamos hospedar no Google Drive, Dropbox ou Cloudinary e colar o link.`);
   }
 
   if (onProgress) onProgress('Convertendo arquivo...');
@@ -408,12 +483,17 @@ async function uploadFileToGitHub(file, onProgress) {
     throw new Error(`GitHub upload falhou (${putRes.status}): ${err.message || 'erro desconhecido'}`);
   }
 
+  const putData = await putRes.json().catch(() => ({}));
+
   // Imagens usam GitHub Raw; vídeos continuam no GitHub Pages.
   const [owner, repoName] = (cfg.repo || '').split('/');
-  const isImage = file.type.startsWith('image/');
-  const publicUrl = isImage
-    ? `https://raw.githubusercontent.com/${owner}/${repoName}/${encodeURIComponent(cfg.branch || 'main')}/${filePath}`
+  let publicUrl = isImage
+    ? `https://raw.githubusercontent.com/${owner}/${repoName}/${putData.commit?.sha || encodeURIComponent(cfg.branch || 'main')}/${filePath}`
     : `https://${owner}.github.io/${repoName}/${filePath}`;
+
+  if (isImage) {
+    publicUrl = await verifyPublicImage(publicUrl, onProgress);
+  }
 
   if (onProgress) onProgress('✓ Upload concluído!');
   return publicUrl;
@@ -1351,7 +1431,8 @@ class KMAdminPanel {
       if (emptyEl) emptyEl.classList.add('is-hidden');
       if (selectedEl) selectedEl.classList.remove('is-hidden');
 
-      if (file.type && file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
+      const imageMimeType = getImageMimeType(file);
+      if (imageMimeType && imageMimeType !== 'image/svg+xml' && imageMimeType !== 'image/webp') {
         if (nameEl) nameEl.textContent = `${file.name} (Convertendo para WebP...)`;
         try {
           const webpRes = await convertImageToWebp(file);
