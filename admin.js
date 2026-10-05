@@ -143,6 +143,11 @@ function normalizeImageUrl(url) {
   if (!url || typeof url !== 'string') return '';
   url = url.trim();
 
+  const legacyMediaPrefix = 'https://abreumarcelo1994.github.io/kmorais/media/';
+  if (url.startsWith(legacyMediaPrefix)) {
+    return `https://raw.githubusercontent.com/abreumarcelo1994/kmorais/main/media/${url.slice(legacyMediaPrefix.length)}`;
+  }
+
   // Mantém blobs locais, identificadores IDB e Data URLs WebP
   if (url.startsWith('data:image/webp') || url.startsWith('blob:') || url.startsWith('idb:')) {
     return url;
@@ -403,10 +408,12 @@ async function uploadFileToGitHub(file, onProgress) {
     throw new Error(`GitHub upload falhou (${putRes.status}): ${err.message || 'erro desconhecido'}`);
   }
 
-  // 5. Montar URL pública do GitHub Pages
-  // Formato: https://{owner}.github.io/{repoName}/{filePath}
+  // Imagens usam GitHub Raw; vídeos continuam no GitHub Pages.
   const [owner, repoName] = (cfg.repo || '').split('/');
-  const publicUrl = `https://${owner}.github.io/${repoName}/${filePath}`;
+  const isImage = file.type.startsWith('image/');
+  const publicUrl = isImage
+    ? `https://raw.githubusercontent.com/${owner}/${repoName}/${encodeURIComponent(cfg.branch || 'main')}/${filePath}`
+    : `https://${owner}.github.io/${repoName}/${filePath}`;
 
   if (onProgress) onProgress('✓ Upload concluído!');
   return publicUrl;

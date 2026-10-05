@@ -63,6 +63,14 @@ if (fs.existsSync('content.json')) {
     }
     checkMediaPortability(data);
 
+    // Logos enviados precisam usar a origem raw, pois Pages pode responder 404 para uploads recentes.
+    for (const brand of data.brandsList || []) {
+      if (brand.image && /^https:\/\/[^/]+\.github\.io\/[^/]+\/media\//i.test(brand.image)) {
+        console.error(`   ❌ ERRO: Logo de marca deve usar raw.githubusercontent.com: "${brand.name}"`);
+        hasErrors = true;
+      }
+    }
+
     // Verifica parâmetros Unsplash no content.json
     function checkUnsplash(obj) {
       for (const k in obj) {

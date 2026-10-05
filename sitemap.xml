@@ -4,7 +4,7 @@
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
   <url>
     <loc>https://kellymorais.com.br/</loc>
-    <lastmod>2026-10-04T00:10:00-03:00</lastmod>
+    <lastmod>2026-10-04T21:15:00-03:00</lastmod>
 
     <!-- ============================================================== -->
     <!-- 1. IMAGENS OFICIAIS (GOOGLE IMAGENS / GOOGLE LENS)            -->
@@ -28,6 +28,16 @@
       <image:loc>https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=600&amp;q=80&amp;auto=format&amp;fit=crop</image:loc>
       <image:title>Kelly Morais no TikTok - Rotina e Maternidade Real</image:title>
       <image:caption>Comunidade de mais de 31 mil seguidores acompanhando dicas reais de consumo e maternidade.</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://raw.githubusercontent.com/abreumarcelo1994/kmorais/main/media/1791157640961_design_sem_nome__12_.webp</image:loc>
+      <image:title>Logo FOX Cycles</image:title>
+      <image:caption>Marca atendida por Kelly Morais em campanhas de conteúdo UGC.</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://raw.githubusercontent.com/abreumarcelo1994/kmorais/main/media/1791157612817_download.webp</image:loc>
+      <image:title>Logo Mercado Livre</image:title>
+      <image:caption>Marca atendida por Kelly Morais em campanhas de conteúdo UGC.</image:caption>
     </image:image>
 
     <!-- ============================================================== -->
