@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-10-05T00:14:50.476Z",
+  "updatedAt": "2026-10-05T00:42:06.126Z",
   "hero": {
     "eyebrow": "KELLY MORAIS · CREATOR + MARKETING",
     "title": "Conteúdo que<br><em>parece conversa</em><br>e gera ação.",
     "text": "UGC com a autenticidade de uma mãe real, a visão de quem fez marketing de e-commerce e o roteiro que uma campanha precisa para performar.",
     "sticker": "a vibe que<br><strong>para o scroll</strong>",
     "video": "https://abreumarcelo1994.github.io/kmorais/media/1791081854407_img_3604.mov",
-    "poster": "https://abreumarcelo1994.github.io/kmorais/media/1791081974768_img_3640.jpg"
+    "poster": "https://raw.githubusercontent.com/abreumarcelo1994/kmorais/main/media/1791081974768_img_3640.jpg"
   },
   "brandsTitle": "Grandes marcas <em>confiam.</em>",
   "brandsList": [
@@ -72,7 +72,7 @@
   "portfolioVideos": [
     {
       "video": "https://kellymorais.com.br/media/1790734936672_img_3460.mov",
-      "poster": "https://abreumarcelo1994.github.io/kmorais/media/1791007309030_a437dc41-f754-4733-b259-54950b7eb3b9.webp",
+      "poster": "https://raw.githubusercontent.com/abreumarcelo1994/kmorais/main/media/1791007309030_a437dc41-f754-4733-b259-54950b7eb3b9.webp",
       "label": "get ready with me"
     },
     {
@@ -102,7 +102,7 @@
     },
     {
       "video": "https://abreumarcelo1994.github.io/kmorais/media/1791085093240_img_3601.mov",
-      "poster": "https://abreumarcelo1994.github.io/kmorais/media/1791085108843_bfe9f403-ba70-4c71-b8e1-d35c6f538bdd.jpg",
+      "poster": "https://raw.githubusercontent.com/abreumarcelo1994/kmorais/main/media/1791085108843_bfe9f403-ba70-4c71-b8e1-d35c6f538bdd.jpg",
       "label": "provador real"
     },
     {
