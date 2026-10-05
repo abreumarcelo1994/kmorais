@@ -4,7 +4,10 @@
 
 ## Navegação Principal do Site
 - [Página Inicial](https://kellymorais.com.br/): Apresentação institucional de Kelly Morais, proposta de valor e cases de sucesso.
-- [Vitrine de Vídeos por Nicho](https://kellymorais.com.br/#trabalhos): Vitrine interativa com 30 vídeos categorizados em Automotivo, Tech, Casa & Decor, Maternidade, Beleza & Autocuidado e Marketplace.
+- [Vitrine de Vídeos por Nicho](https://kellymorais.com.br/#trabalhos): Vitrine interativa com vídeos organizados nas categorias abaixo.
+<!-- KM_CMS_CATEGORIES_START -->
+Automotivo, Tech, Casa & Decor, Maternidade, Beleza & Autocuidado, Marketplace & Ads.
+<!-- KM_CMS_CATEGORIES_END -->
 - [Cases Reais Publicados](https://kellymorais.com.br/#cases-reais): Seleção de conteúdos reais veiculados com métricas no Instagram Reels e TikTok.
 - [Sobre a Criadora](https://kellymorais.com.br/#sobre): Biografia profissional, trajetória acadêmica em Marketing e vivência no marketing de e-commerce.
 - [Formatos e Serviços](https://kellymorais.com.br/#servicos): Modelos de contratação para marcas e agências (Vídeos para Ads, Marketplace, Live Commerce e Pacotes para Agências).
@@ -23,6 +26,9 @@
 - [Pacotes Mensais para Agências](https://kellymorais.com.br/#servicos): Fornecimento contínuo de variações de hooks e gravações em lote com previsibilidade de entrega.
 
 ## Marcas Atendidas no Portfólio
+<!-- KM_CMS_BRANDS_START -->
+Dove, Fox Cycles, Seda, Kibon, Omo, Avon, Kopenhagen, Cif, Pantene, Eudora, Mercado Livre, Sensodyne, Secret e Upseller ERP.
+<!-- KM_CMS_BRANDS_END -->
 - [Case Dove](https://kellymorais.com.br/#trabalhos): Conteúdo voltado a cuidados pessoais, pele e hidratação.
 - [Case FOX Cycles](https://www.instagram.com/foxcyclesoficial/reel/DUB0JGkkkR_/): Colaboração e campanha institucional para a marca automotiva e de mobilidade.
 - [Case Seda](https://kellymorais.com.br/#trabalhos): Vídeos demonstrativos para cuidados capilares e rotina.

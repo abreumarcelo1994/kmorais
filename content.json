@@ -69,6 +69,14 @@
   ],
   "portfolioTitle": "Cases que<br><em>fazem vender.</em>",
   "portfolioIntro": "Do roteiro ao video final, cada entrega nasce alinhada ao objetivo da marca: conectar, explicar ou converter.",
+  "categories": [
+    { "id": "automotivo", "name": "Automotivo", "description": "produto em uso, sem enrolacao" },
+    { "id": "tech", "name": "Tech", "description": "explicacao simples, desejo imediato" },
+    { "id": "casa", "name": "Casa & Decor", "description": "detalhes que fazem sentir" },
+    { "id": "maternidade", "name": "Maternidade", "description": "vida real que gera confianca" },
+    { "id": "beleza", "name": "Beleza & Autocuidado", "description": "textura, rotina e resultado" },
+    { "id": "marketplace", "name": "Marketplace & Ads", "description": "video curto com foco no produto" }
+  ],
   "portfolioVideos": [
     {
       "video": "https://kellymorais.com.br/media/1790734936672_img_3460.mov",

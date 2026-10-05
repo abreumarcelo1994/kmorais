@@ -33,11 +33,6 @@ function normalizeImageUrl(url, maxW) {
   if (!url || typeof url !== 'string') return '';
   url = url.trim();
 
-  // Garante que referências locais na pasta media usem a versão compactada .webp
-  if (url.includes('/media/') && (url.endsWith('.jpeg') || url.endsWith('.jpg'))) {
-    url = url.replace(/\.(jpeg|jpg)$/i, '.webp');
-  }
-
   // Mantém blobs locais, identificadores IDB e Data URLs WebP
   if (url.startsWith('data:image/webp') || url.startsWith('blob:') || url.startsWith('idb:')) {
     return url;
@@ -136,6 +131,14 @@ const defaultCMSContent = {
   ],
   portfolioTitle: "Cases que<br><em>fazem vender.</em>",
   portfolioIntro: "Do roteiro ao video final, cada entrega nasce alinhada ao objetivo da marca: conectar, explicar ou converter.",
+  categories: [
+    { id: "automotivo", name: "Automotivo", description: "produto em uso, sem enrolacao" },
+    { id: "tech", name: "Tech", description: "explicacao simples, desejo imediato" },
+    { id: "casa", name: "Casa & Decor", description: "detalhes que fazem sentir" },
+    { id: "maternidade", name: "Maternidade", description: "vida real que gera confianca" },
+    { id: "beleza", name: "Beleza & Autocuidado", description: "textura, rotina e resultado" },
+    { id: "marketplace", name: "Marketplace & Ads", description: "video curto com foco no produto" }
+  ],
   portfolioVideos: [],
   servicesTitle: "Conteudo para<br><em>cada objetivo.</em>",
   servicesList: [
@@ -392,7 +395,8 @@ class KMCMS {
     try {
       this.data = deepMerge(this.data, newData);
       localStorage.setItem(KM_CMS_STORAGE_KEY, JSON.stringify(this.data));
-      localStorage.setItem(KM_CMS_SYNC_KEY, String(Date.now()));
+      const contentTimestamp = this.data.updatedAt ? new Date(this.data.updatedAt).getTime() : 0;
+      localStorage.setItem(KM_CMS_SYNC_KEY, String(contentTimestamp || Date.now()));
 
       // 1. Sincroniza via BroadcastChannel para outras abas
       if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
@@ -433,23 +437,23 @@ class KMCMS {
       if (!published || typeof published !== 'object') return null;
 
       const localSaved = localStorage.getItem(KM_CMS_STORAGE_KEY);
-      const localUpdatedAt = localStorage.getItem(KM_CMS_SYNC_KEY);
+      const localSyncTimestamp = Number(localStorage.getItem(KM_CMS_SYNC_KEY) || 0);
+      let localContentTimestamp = 0;
+      if (localSaved) {
+        try {
+          const localData = JSON.parse(localSaved);
+          localContentTimestamp = localData.updatedAt ? new Date(localData.updatedAt).getTime() : 0;
+        } catch (_) {}
+      }
 
       const publishedTimestamp = published.updatedAt ? new Date(published.updatedAt).getTime() : 0;
-      const localTimestamp = localUpdatedAt ? Number(localUpdatedAt) : 0;
+      const localIsConfirmed = localContentTimestamp > 0 && localSyncTimestamp === localContentTimestamp;
 
-      // Guarda de 15 segundos: se o localStorage foi salvo nos últimos 15s,
-      // o content.json do servidor pode ainda estar em cache/CDN desatualizado.
-      // Não sobrescrever para evitar FOIC (flash da imagem antiga após salvar).
-      const gracePeriodMs = 15000;
-      const localIsFresh = localTimestamp && (Date.now() - localTimestamp) < gracePeriodMs;
-      if (localIsFresh) {
-        console.log('[CMS] Dados locais recém-salvos (' + Math.round((Date.now() - localTimestamp) / 1000) + 's). Ignorando content.json para evitar FOIC.');
+      if (localIsConfirmed && localContentTimestamp > publishedTimestamp) {
         return published;
       }
 
-      // Se os dados publicados no GitHub forem diferentes do que está em cache (outro aparelho salvou):
-      if (!localSaved || (publishedTimestamp && publishedTimestamp !== localTimestamp)) {
+      if (!localIsConfirmed || publishedTimestamp > localContentTimestamp) {
         this.data = deepMerge(defaultCMSContent, published);
         localStorage.setItem(KM_CMS_STORAGE_KEY, JSON.stringify(this.data));
         if (publishedTimestamp) {
@@ -477,20 +481,40 @@ class KMCMS {
   importJSON(jsonString) {
     try {
       const parsed = JSON.parse(jsonString);
-      if (parsed && typeof parsed === 'object') {
-        this.saveContent(parsed);
-        this.applyToPage();
-        return true;
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return deepMerge(this.data, parsed);
       }
     } catch (err) {
       console.error('Falha ao importar JSON:', err);
     }
-    return false;
+    return null;
   }
 
   async applyToPage() {
     const data = this.data;
     if (!data) return;
+
+    if (Array.isArray(data.categories)) {
+      data.categories.forEach((category) => {
+        if (!category?.id) return;
+        const filterButton = Array.from(document.querySelectorAll('[data-filter]'))
+          .find(button => button.dataset.filter === category.id);
+        const filterLabel = filterButton?.querySelector('.filter-text');
+        const categoryBlock = Array.from(document.querySelectorAll('[data-category]'))
+          .find(block => block.dataset.category === category.id);
+        const heading = categoryBlock?.querySelector('.category-head h3');
+        const description = categoryBlock?.querySelector('.category-head p');
+
+        if (category.name) {
+          if (filterLabel) filterLabel.textContent = category.name;
+          else if (filterButton) filterButton.textContent = category.name;
+          if (heading) heading.textContent = category.name;
+        }
+        if (description && category.description) {
+          description.textContent = category.description;
+        }
+      });
+    }
 
     // =========================================================================
     // FASE 1: APLICAÇÃO SÍNCRONA IMEDIATA (TEXTOS E MÍDIAS DIRETAS SEM AWAIT)

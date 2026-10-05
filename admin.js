@@ -38,6 +38,12 @@ function utf8ToBase64(str) {
   return btoa(binary);
 }
 
+function base64ToUtf8(value) {
+  const binary = atob(value.replace(/\s/g, ''));
+  const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
 // Rate limiting: bloqueia login após 5 tentativas erradas por 30 segundos
 function isLoginLocked() {
   const lockoutUntil = Number(sessionStorage.getItem(KM_LOGIN_LOCKOUT_KEY) || 0);
@@ -120,25 +126,17 @@ function normalizeVideoUrl(url) {
   if (!url || typeof url !== 'string') return '';
   url = url.trim();
 
-  // 1. Google Drive (converte link de compartilhamento para stream direto)
   const driveMatch = url.match(/drive\.google\.com\/(?:file\/d\/([a-zA-Z0-9_-]+)|open\?id=([a-zA-Z0-9_-]+))/);
   if (driveMatch) {
     const fileId = driveMatch[1] || driveMatch[2];
     return `https://drive.google.com/uc?export=download&id=${fileId}`;
   }
-
-  // 2. Dropbox (dl=0 -> raw=1 para streaming direto)
   if (url.includes('dropbox.com') && url.includes('dl=0')) {
     return url.replace('dl=0', 'raw=1');
   }
-
   return url;
 }
 
-/**
- * Normaliza e otimiza automaticamente URLs de imagens externas (Unsplash, Cloudinary, etc.)
- * para garantir sempre entrega em WebP e parâmetros de alta performance.
- */
 function normalizeImageUrl(url) {
   if (!url || typeof url !== 'string') return '';
   url = url.trim();
@@ -147,13 +145,8 @@ function normalizeImageUrl(url) {
   if (url.startsWith(legacyMediaPrefix)) {
     return `https://raw.githubusercontent.com/abreumarcelo1994/kmorais/main/media/${url.slice(legacyMediaPrefix.length)}`;
   }
+  if (url.startsWith('data:image/webp') || url.startsWith('blob:') || url.startsWith('idb:')) return url;
 
-  // Mantém blobs locais, identificadores IDB e Data URLs WebP
-  if (url.startsWith('data:image/webp') || url.startsWith('blob:') || url.startsWith('idb:')) {
-    return url;
-  }
-
-  // 1. Unsplash: força WebP e compressão automática
   if (url.includes('images.unsplash.com')) {
     try {
       const u = new URL(url);
@@ -161,26 +154,17 @@ function normalizeImageUrl(url) {
       u.searchParams.set('fit', 'crop');
       u.searchParams.set('fm', 'webp');
       const curW = Number(u.searchParams.get('w'));
-      if (!curW || curW > 300) {
-        u.searchParams.set('w', '300');
-      }
+      if (!curW || curW > 300) u.searchParams.set('w', '300');
       const curQ = Number(u.searchParams.get('q'));
-      if (!curQ || curQ > 45) {
-        u.searchParams.set('q', '45');
-      }
+      if (!curQ || curQ > 45) u.searchParams.set('q', '45');
       return u.toString();
     } catch (_) {
       return url;
     }
   }
-
-  // 2. Cloudinary: injeta flags f_auto,q_auto
-  if (url.includes('res.cloudinary.com') && url.includes('/image/upload/')) {
-    if (!url.includes('f_auto') && !url.includes('f_webp')) {
-      return url.replace('/image/upload/', '/image/upload/f_auto,q_auto/');
-    }
+  if (url.includes('res.cloudinary.com') && url.includes('/image/upload/') && !url.includes('f_auto') && !url.includes('f_webp')) {
+    return url.replace('/image/upload/', '/image/upload/f_auto,q_auto/');
   }
-
   return url;
 }
 
@@ -265,6 +249,11 @@ async function githubApiRequest(cfg, endpoint, method = 'GET', payload = null) {
     if (response.status === 401) {
       throw new Error('(401) Bad credentials — O token do GitHub inserido é inválido ou expirou.');
     }
+    if (response.status === 422 && /too large|input was too large/i.test(data.message || '')) {
+      const error = new Error('O GitHub recusou o vídeo porque o corpo Base64 ficou grande demais. O limite seguro deste painel é 32 MiB; para vídeos maiores, cole um link do Cloudinary, Google Drive ou Dropbox.');
+      error.status = response.status;
+      throw error;
+    }
     const error = new Error(`GitHub API falhou (${response.status}): ${data.message || 'erro desconhecido'}`);
     error.status = response.status;
     throw error;
@@ -314,6 +303,216 @@ async function uploadLargeFileToGitHub(cfg, filePath, base64Content, onProgress)
   }
 
   throw lastError || new Error('Não foi possível publicar o vídeo grande no GitHub.');
+}
+
+async function fetchGitHubTextFile(cfg, filePath, branch) {
+  const encodedPath = filePath.split('/').map(encodeURIComponent).join('/');
+  const data = await githubApiRequest(cfg, `contents/${encodedPath}?ref=${encodeURIComponent(branch)}`);
+  if (!data.content || data.encoding !== 'base64') {
+    throw new Error(`O arquivo ${filePath} não retornou conteúdo editável pelo GitHub API.`);
+  }
+  return base64ToUtf8(data.content);
+}
+
+async function commitFilesToGitHub(cfg, files, onProgress) {
+  const branch = cfg.branch || 'main';
+  const branchRef = `heads/${branch.split('/').map(encodeURIComponent).join('/')}`;
+  let lastError;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const refData = await githubApiRequest(cfg, `git/ref/${branchRef}`);
+    const parentSha = refData.object?.sha;
+    if (!parentSha) throw new Error('Não foi possível localizar a versão atual do branch no GitHub.');
+
+    const parentCommit = await githubApiRequest(cfg, `git/commits/${parentSha}`);
+    const entries = await Promise.all(files.map(async (file) => {
+      const blob = await githubApiRequest(cfg, 'git/blobs', 'POST', {
+        content: file.content,
+        encoding: 'utf-8'
+      });
+      return { path: file.path, mode: '100644', type: 'blob', sha: blob.sha };
+    }));
+    const tree = await githubApiRequest(cfg, 'git/trees', 'POST', {
+      base_tree: parentCommit.tree.sha,
+      tree: entries
+    });
+    const commit = await githubApiRequest(cfg, 'git/commits', 'POST', {
+      message: 'cms: publica conteudo e documentos sincronizados',
+      tree: tree.sha,
+      parents: [parentSha]
+    });
+
+    try {
+      await githubApiRequest(cfg, `git/refs/${branchRef}`, 'PATCH', {
+        sha: commit.sha,
+        force: false
+      });
+      return commit;
+    } catch (error) {
+      lastError = error;
+      if (![409, 422].includes(error.status) || attempt === 2) throw error;
+      if (onProgress) onProgress(`Outro dispositivo publicou durante o envio; sincronizando (${attempt + 2}/3)...`);
+      await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+    }
+  }
+
+  throw lastError || new Error('Não foi possível publicar os arquivos sincronizados no GitHub.');
+}
+
+function updateCategoryHtml(html, categories, brands = []) {
+  const parsed = new DOMParser().parseFromString(html, 'text/html');
+  let changed = false;
+
+  categories.forEach((category) => {
+    if (!category?.id) return;
+    const filterButton = Array.from(parsed.querySelectorAll('[data-filter]'))
+      .find(button => button.dataset.filter === category.id);
+    const filterLabel = filterButton?.querySelector('.filter-text');
+    const categoryBlock = Array.from(parsed.querySelectorAll('[data-category]'))
+      .find(block => block.dataset.category === category.id);
+    const heading = categoryBlock?.querySelector('.category-head h3');
+    const description = categoryBlock?.querySelector('.category-head p');
+
+    if (category.name) {
+      if (filterLabel && filterLabel.textContent !== category.name) {
+        filterLabel.textContent = category.name;
+        changed = true;
+      } else if (!filterLabel && filterButton && filterButton.textContent.trim() !== category.name) {
+        filterButton.textContent = category.name;
+        changed = true;
+      }
+      if (heading && heading.textContent.trim() !== category.name) {
+        heading.textContent = category.name;
+        changed = true;
+      }
+    }
+    if (description && category.description && description.textContent.trim() !== category.description) {
+      description.textContent = category.description;
+      changed = true;
+    }
+  });
+
+  const brandPills = parsed.querySelectorAll('.brands-grid .brand-pill');
+  brands.forEach((brand, index) => {
+    const pill = brandPills[index];
+    if (!pill || !brand.name) return;
+    if (pill.title !== brand.name) {
+      pill.title = brand.name;
+      changed = true;
+    }
+    const image = pill.querySelector('img.brand-logo-img');
+    if (image && image.alt !== brand.name) {
+      image.alt = brand.name;
+      changed = true;
+    }
+  });
+
+  return changed ? `<!DOCTYPE html>\n${parsed.documentElement.outerHTML}` : html;
+}
+
+function updateLlmsCategories(llmsText, categories) {
+  const startMarker = '<!-- KM_CMS_CATEGORIES_START -->';
+  const endMarker = '<!-- KM_CMS_CATEGORIES_END -->';
+  const start = llmsText.indexOf(startMarker);
+  const end = llmsText.indexOf(endMarker);
+  if (start < 0 || end < start) throw new Error('Marcadores de categorias ausentes no llms.txt.');
+
+  const names = categories.map(category => category.name.replace(/[\r\n]/g, ' ').trim()).filter(Boolean);
+  const block = `${startMarker}\n${names.join(', ')}.\n${endMarker}`;
+  return `${llmsText.slice(0, start)}${block}${llmsText.slice(end + endMarker.length)}`;
+}
+
+function updateLlmsBrands(llmsText, brands, previousBrands = []) {
+  const startMarker = '<!-- KM_CMS_BRANDS_START -->';
+  const endMarker = '<!-- KM_CMS_BRANDS_END -->';
+  if (!llmsText.includes(startMarker) || !llmsText.includes(endMarker)) {
+    throw new Error('Marcadores de marcas ausentes no llms.txt.');
+  }
+
+  const replacements = new Map();
+  previousBrands.forEach((previous, index) => {
+    const oldName = String(previous?.name || '').trim();
+    const newName = String(brands[index]?.name || '').trim();
+    if (!oldName || !newName || oldName.toLowerCase() === newName.toLowerCase()) return;
+    replacements.set(oldName.toLowerCase(), newName);
+  });
+  if (replacements.size) {
+    const pattern = Array.from(replacements.keys())
+      .map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .join('|');
+    llmsText = llmsText.replace(new RegExp(pattern, 'gi'), name => replacements.get(name.toLowerCase()) || name);
+  }
+
+  const start = llmsText.indexOf(startMarker);
+  const end = llmsText.indexOf(endMarker, start + startMarker.length);
+  const names = brands.map(brand => String(brand.name || '').replace(/[\r\n]/g, ' ').trim()).filter(Boolean);
+  const block = `${startMarker}\n${names.join(', ')}.\n${endMarker}`;
+  return `${llmsText.slice(0, start)}${block}${llmsText.slice(end + endMarker.length)}`;
+}
+
+function updateSitemapCategories(sitemapText, categories, brands = []) {
+  const xml = new DOMParser().parseFromString(sitemapText, 'application/xml');
+  if (xml.getElementsByTagName('parsererror').length) throw new Error('O sitemap.xml atual não é XML válido.');
+
+  const sitemapNs = 'http://www.sitemaps.org/schemas/sitemap/0.9';
+  const videoNs = 'http://www.google.com/schemas/sitemap-video/1.1';
+  const lastmod = xml.getElementsByTagNameNS(sitemapNs, 'lastmod')[0];
+  if (lastmod) {
+    lastmod.textContent = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString().replace(/\.\d{3}Z$/, '-03:00');
+  }
+
+  const video = xml.getElementsByTagNameNS(videoNs, 'video')[0];
+  if (!video) throw new Error('O sitemap.xml não contém um VideoObject para associar às categorias.');
+  const children = Array.from(video.childNodes);
+  const start = children.find(node => node.nodeType === 8 && node.data.trim() === 'KM_CMS_CATEGORIES_START');
+  const end = children.find(node => node.nodeType === 8 && node.data.trim() === 'KM_CMS_CATEGORIES_END');
+  if (!start || !end) throw new Error('Marcadores de categorias ausentes no sitemap.xml.');
+
+  let node = start.nextSibling;
+  while (node && node !== end) {
+    const next = node.nextSibling;
+    video.removeChild(node);
+    node = next;
+  }
+  categories.forEach((category) => {
+    if (!category.name) return;
+    const tag = xml.createElementNS(videoNs, 'video:tag');
+    tag.textContent = category.name;
+    video.insertBefore(xml.createTextNode('\n      '), end);
+    video.insertBefore(tag, end);
+  });
+  video.insertBefore(xml.createTextNode('\n      '), end);
+
+  const imageNs = 'http://www.google.com/schemas/sitemap-image/1.1';
+  const page = xml.getElementsByTagNameNS(sitemapNs, 'url')[0];
+  const pageChildren = Array.from(page.childNodes);
+  const brandsStart = pageChildren.find(child => child.nodeType === 8 && child.data.trim() === 'KM_CMS_BRANDS_START');
+  const brandsEnd = pageChildren.find(child => child.nodeType === 8 && child.data.trim() === 'KM_CMS_BRANDS_END');
+  if (!brandsStart || !brandsEnd) throw new Error('Marcadores de logos ausentes no sitemap.xml.');
+
+  let brandNode = brandsStart.nextSibling;
+  while (brandNode && brandNode !== brandsEnd) {
+    const next = brandNode.nextSibling;
+    page.removeChild(brandNode);
+    brandNode = next;
+  }
+  brands.forEach((brand) => {
+    if (!/^https?:\/\//i.test(brand.image || '')) return;
+    const image = xml.createElementNS(imageNs, 'image:image');
+    const location = xml.createElementNS(imageNs, 'image:loc');
+    const title = xml.createElementNS(imageNs, 'image:title');
+    const caption = xml.createElementNS(imageNs, 'image:caption');
+    location.textContent = brand.image;
+    title.textContent = `Logo ${brand.name}`;
+    caption.textContent = `Marca atendida por Kelly Morais em campanhas de conteúdo UGC.`;
+    image.append(location, title, caption);
+    page.insertBefore(xml.createTextNode('\n    '), brandsEnd);
+    page.insertBefore(image, brandsEnd);
+  });
+  page.insertBefore(xml.createTextNode('\n    '), brandsEnd);
+
+  const serialized = new XMLSerializer().serializeToString(xml);
+  return serialized.startsWith('<?xml') ? serialized : `<?xml version="1.0" encoding="UTF-8"?>\n${serialized}`;
 }
 
 /**
@@ -450,7 +649,7 @@ async function uploadFileToGitHub(file, onProgress) {
   const isImage = Boolean(imageMimeType);
   if (isImage) file = withImageMimeType(file, imageMimeType);
 
-  const maxBytes = 70 * 1024 * 1024;
+  const maxBytes = 32 * 1024 * 1024;
   const contentsApiMaxBytes = 24 * 1024 * 1024;
 
   // Se for imagem (exceto SVG), converte e otimiza para WebP antes do envio
@@ -467,7 +666,7 @@ async function uploadFileToGitHub(file, onProgress) {
   }
 
   if (file.size > maxBytes) {
-    throw new Error(`O limite deste painel é de 70 MiB por arquivo. Para vídeos maiores, hospede no Cloudinary, Google Drive ou Dropbox e cole o link.`);
+    throw new Error(`O limite deste painel é de 32 MiB por arquivo para manter o corpo Base64 dentro do limite da API do GitHub. Para vídeos maiores, hospede no Cloudinary, Google Drive ou Dropbox e cole o link.`);
   }
 
   if (onProgress) onProgress('Convertendo arquivo...');
@@ -695,6 +894,7 @@ class KMAdminPanel {
       if (!remote || !remote.updatedAt) return;
 
       const localSaved = localStorage.getItem(KM_CMS_STORAGE_KEY);
+      const localSyncTimestamp = Number(localStorage.getItem(KM_CMS_SYNC_KEY) || 0);
       let localTimestamp = 0;
       if (localSaved) {
         try {
@@ -704,13 +904,15 @@ class KMAdminPanel {
       }
 
       const remoteTimestamp = new Date(remote.updatedAt).getTime();
-      // Se a nuvem tiver dados mais recentes ou se não houver dados locais, sincroniza o painel
-      if (!localSaved || remoteTimestamp > localTimestamp) {
+      const localIsConfirmed = localTimestamp > 0 && localSyncTimestamp === localTimestamp;
+      if (this.hasUnsavedChanges) return;
+
+      if (!localIsConfirmed || remoteTimestamp > localTimestamp) {
         console.log('[Admin] Conteúdo mais recente detectado no GitHub. Sincronizando tela...');
         if (window.kmCMS) {
           window.kmCMS.data = deepMerge(defaultCMSContent, remote);
           localStorage.setItem(KM_CMS_STORAGE_KEY, JSON.stringify(window.kmCMS.data));
-          localStorage.setItem(KM_CMS_SYNC_KEY, String(remoteTimestamp));
+          localStorage.setItem(KM_CMS_SYNC_KEY, String(new Date(window.kmCMS.data.updatedAt).getTime()));
           await window.kmCMS.applyToPage();
           this.showToast('ℹ️ Painel sincronizado com a versão mais recente da nuvem.');
         }
@@ -724,7 +926,6 @@ class KMAdminPanel {
     if (this._editableDone) return;
     this._editableDone = true;
 
-    // Alerta de fechamento acidental com alterações pendentes
     window.addEventListener('beforeunload', (e) => {
       if (this.hasUnsavedChanges) {
         e.preventDefault();
@@ -732,27 +933,13 @@ class KMAdminPanel {
       }
     });
 
-    // Lista de seletores de textos editáveis seguros
     const textSelectors = [
-      '#hero-title',
-      '.hero-text',
-      '.hero-copy .eyebrow',
-      '.hero-sticker',
-      '#brands-title',
-      '#portfolio-title',
-      '.portfolio .section-intro',
-      '.category-head h3',
-      '.category-head p',
-      '.video-meta span:first-child',
-      '#about-title',
-      '.about-content p:nth-of-type(2)',
-      '#services-title',
-      '.service-card h3',
-      '.service-card p',
-      '.stats-row strong',
-      '.stats-row span',
-      '#contact-title',
-      '.contact-note-item a'
+      '#hero-title', '.hero-text', '.hero-copy .eyebrow', '.hero-sticker',
+      '#brands-title', '#portfolio-title', '.portfolio .section-intro',
+      '.category-head h3', '.category-head p', '.video-meta span:first-child',
+      '#about-title', '.about-content p:nth-of-type(2)', '#services-title',
+      '.service-card h3', '.service-card p', '.stats-row strong', '.stats-row span',
+      '#contact-title', '.contact-note-item a'
     ];
 
     textSelectors.forEach((selector) => {
@@ -760,21 +947,21 @@ class KMAdminPanel {
         el.setAttribute('contenteditable', 'true');
         el.setAttribute('spellcheck', 'false');
         el.setAttribute('data-editable', 'text');
-
-        // Detecta digitação e aciona o pulso de salvar
         el.addEventListener('input', () => {
           document.body.classList.add('has-unsaved-changes');
           this.hasUnsavedChanges = true;
-        });
-
-        // Previne navegação se o elemento for um link enquanto edita
-        el.addEventListener('click', (e) => {
-          if (el.tagName === 'A') {
-            e.preventDefault();
+          if (el.matches('.category-head h3')) {
+            const categoryId = el.closest('[data-category]')?.dataset.category;
+            const filterButton = Array.from(document.querySelectorAll('[data-filter]'))
+              .find(button => button.dataset.filter === categoryId);
+            const filterLabel = filterButton?.querySelector('.filter-text');
+            if (filterLabel) filterLabel.textContent = el.textContent.trim();
+            else if (filterButton) filterButton.textContent = el.textContent.trim();
           }
         });
-
-        // Impede quebra de linha indevida com formatações malucas
+        el.addEventListener('click', (e) => {
+          if (el.tagName === 'A') e.preventDefault();
+        });
         el.addEventListener('paste', (e) => {
           e.preventDefault();
           const text = (e.originalEvent || e).clipboardData.getData('text/plain');
@@ -1097,16 +1284,24 @@ class KMAdminPanel {
       });
     }
 
-    const doReset = () => {
-      if (confirm('Tem certeza que deseja restaurar os textos e vídeos padrões do site original?')) {
-        localStorage.removeItem(KM_CMS_STORAGE_KEY);
-        if (window.kmMediaStore?.cleanupOrphans) {
-          window.kmMediaStore.cleanupOrphans([]).finally(() => {
-            location.reload();
-          });
-          return;
-        }
-        location.reload();
+    const doReset = async () => {
+      if (!confirm('Descartar as alterações pendentes e recarregar a versão publicada online?')) return;
+      if (this.isSaving || !window.kmCMS) return;
+
+      try {
+        const response = await fetch(`content.json?_t=${Date.now()}`, { cache: 'no-store' });
+        if (!response.ok) throw new Error(`GitHub Pages respondeu ${response.status}.`);
+        const published = await response.json();
+        if (!published || !published.updatedAt) throw new Error('O conteúdo publicado não é válido.');
+
+        window.kmCMS.data = deepMerge(defaultCMSContent, published);
+        if (!window.kmCMS.saveContent(published)) throw new Error('Não foi possível atualizar o cache deste dispositivo.');
+        await window.kmCMS.applyToPage();
+        this.hasUnsavedChanges = false;
+        document.body.classList.remove('has-unsaved-changes');
+        this.showToast('Versão publicada online carregada neste dispositivo.');
+      } catch (error) {
+        this.showToast(`Não foi possível carregar a versão online: ${error.message}`, 'error');
       }
     };
 
@@ -1726,6 +1921,11 @@ class KMAdminPanel {
 
     const portfolioTitle = document.querySelector('#portfolio-title')?.innerHTML.trim();
     const portfolioIntro = document.querySelector('.portfolio .section-intro')?.innerHTML.trim();
+    const categories = Array.from(document.querySelectorAll('.category-block')).map((block) => ({
+      id: block.dataset.category || '',
+      name: block.querySelector('.category-head h3')?.textContent.trim() || '',
+      description: block.querySelector('.category-head p')?.textContent.trim() || ''
+    })).filter(category => category.id);
 
     // 30 Vídeos
     const portfolioVideos = [];
@@ -1818,6 +2018,7 @@ class KMAdminPanel {
       brandsList,
       portfolioTitle,
       portfolioIntro,
+      categories,
       portfolioVideos,
       realCases,
       instagramPosts,
@@ -1839,83 +2040,48 @@ class KMAdminPanel {
 
   async publishToGitHub(contentToSave) {
     const cfg = getGitHubConfig();
-    if (!cfg || !cfg.token) {
+    if (!cfg || !cfg.token || cfg.token.includes('*')) {
       return { ok: false, missingConfig: true };
     }
+    try {
+      const branch = cfg.branch || 'main';
+      const categories = contentToSave.categories || defaultCMSContent.categories;
+      const [remoteContentText, ...documentTexts] = await Promise.all([
+        fetchGitHubTextFile(cfg, cfg.path || 'content.json', branch),
+        ...['index.html', 'admin.html', 'llms.txt', 'sitemap.xml'].map(path => fetchGitHubTextFile(cfg, path, branch))
+      ]);
+      const remoteContent = JSON.parse(remoteContentText);
+      const previousBrands = Array.isArray(remoteContent.brandsList) ? remoteContent.brandsList : [];
+      const documentPaths = ['index.html', 'admin.html', 'llms.txt', 'sitemap.xml'];
+      const documents = await Promise.all(documentPaths.map(async path => ({
+        path,
+        content: documentTexts[documentPaths.indexOf(path)]
+      })));
+      const original = Object.fromEntries(documents.map(file => [file.path, file.content]));
+      const updated = [
+        { path: 'index.html', content: updateCategoryHtml(original['index.html'], categories, contentToSave.brandsList || []) },
+        { path: 'admin.html', content: updateCategoryHtml(original['admin.html'], categories, contentToSave.brandsList || []) },
+        { path: 'llms.txt', content: updateLlmsBrands(updateLlmsCategories(original['llms.txt'], categories), contentToSave.brandsList || [], previousBrands) },
+        { path: 'sitemap.xml', content: updateSitemapCategories(original['sitemap.xml'], categories, contentToSave.brandsList || []) }
+      ].filter(file => file.content !== original[file.path]);
 
-    const fetchCurrentSha = async () => {
-      try {
-        const checkRes = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}&_t=${Date.now()}`, {
-          cache: 'no-store',
-          headers: {
-            'Authorization': `Bearer ${cfg.token}`,
-            'Accept': 'application/vnd.github+json',
-            'X-GitHub-Api-Version': '2022-11-28'
-          }
-        });
-        if (checkRes.ok) {
-          const fileData = await checkRes.json();
-          return fileData.sha || null;
-        }
-      } catch (e) {}
-      return null;
-    };
-
-    const jsonString = JSON.stringify(contentToSave, null, 2);
-    const base64Content = utf8ToBase64(jsonString);
-
-    const makePut = async (shaToUse) => {
-      const payload = {
-        message: `cms: atualiza conteudo do site via painel administrativo [${new Date().toLocaleTimeString('pt-BR')}]`,
-        content: base64Content,
-        branch: cfg.branch || 'main'
-      };
-      if (shaToUse) {
-        payload.sha = shaToUse;
-      }
-
-      return fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${cfg.token}`,
-          'Accept': 'application/vnd.github+json',
-          'Content-Type': 'application/json',
-          'X-GitHub-Api-Version': '2022-11-28'
-        },
-        body: JSON.stringify(payload)
-      });
-    };
-
-    // 1. Obter SHA atual do content.json
-    let currentSha = await fetchCurrentSha();
-
-    // 2. Primeiro PUT
-    let putRes = await makePut(currentSha);
-
-    // 3. Auto-recuperação se 409 Conflict (outro salvamento acabou de acontecer ou SHA desatualizado)
-    if (putRes.status === 409) {
-      console.warn('Admin CMS: 409 Conflict detectado no GitHub. Aguardando 400ms para auto-recuperação...');
-      await new Promise(r => setTimeout(r, 400));
-      const freshSha = await fetchCurrentSha();
-      if (freshSha) {
-        putRes = await makePut(freshSha);
-      }
-    }
-
-    if (putRes.ok) {
+      const files = [
+        { path: cfg.path || 'content.json', content: JSON.stringify(contentToSave, null, 2) },
+        ...updated
+      ];
+      await commitFilesToGitHub(cfg, files);
       return { ok: true };
+    } catch (error) {
+      return {
+        ok: false,
+        status: error.status || 0,
+        message: error.message || 'Erro ao publicar no GitHub'
+      };
     }
-
-    const errData = await putRes.json().catch(() => ({}));
-    return {
-      ok: false,
-      status: putRes.status,
-      message: errData.message || 'Erro ao publicar no GitHub'
-    };
   }
 
   async saveAllChanges() {
-    if (this.isSaving) return;
+    if (this.isSaving) return false;
     this.isSaving = true;
 
     const saveBtn = document.getElementById('admin-save-btn');
@@ -1926,66 +2092,21 @@ class KMAdminPanel {
       saveBtn.innerHTML = '⏳ Salvando e publicando...';
     }
 
+    let published = false;
     try {
       const contentToSave = this.extractCurrentContent();
       contentToSave.updatedAt = new Date().toISOString();
 
-      // 1. Salva localmente de imediato
-      kmCMS.saveContent(contentToSave);
-
-      // 1.1 Limpeza profunda no IndexedDB: apaga qualquer mídia do PC que não esteja mais sendo usada
-      try {
-        const activeMediaIds = [];
-        const collectMediaIds = (obj) => {
-          if (!obj) return;
-          if (typeof obj === 'string') {
-            if (obj.startsWith('idb:')) activeMediaIds.push(obj);
-          } else if (Array.isArray(obj)) {
-            obj.forEach(collectMediaIds);
-          } else if (typeof obj === 'object') {
-            Object.values(obj).forEach(collectMediaIds);
-          }
-        };
-        collectMediaIds(contentToSave);
-        if (window.kmMediaStore?.cleanupOrphans) {
-          await window.kmMediaStore.cleanupOrphans(activeMediaIds);
-        }
-      } catch (cleanErr) {
-        console.warn('Admin: erro ao limpar mídias órfãs do banco', cleanErr);
-      }
-
-      if (window.opener && !window.opener.closed) {
-        try {
-          window.opener.postMessage({ type: 'CONTENT_UPDATED', data: contentToSave }, window.location.origin);
-        } catch (err) {}
-      }
-
-      // 1.2 Salva diretamente no arquivo local do disco (quando rodando via node server.js)
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        try {
-          await fetch('/api/save-content', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(contentToSave)
-          });
-        } catch (diskErr) {
-          console.warn('Admin: aviso ao gravar content.json no disco local', diskErr);
-        }
-      }
-
-      // 2. Publica automaticamente no GitHub
+      // A publicação é a gravação principal; nada é persistido localmente antes dela.
       const ghResult = await this.publishToGitHub(contentToSave);
 
-      if (ghResult.ok) {
-        document.body.classList.remove('has-unsaved-changes');
-        this.hasUnsavedChanges = false;
-        this.updateGitHubWarningBar();
-        this.showToast('🚀 Salvo no GitHub com sucesso! O site oficial já está atualizando.');
-      } else if (ghResult.missingConfig) {
-        this.showToast('⚠️ Salvo apenas localmente! Conecte seu Token do GitHub para subir no site oficial.');
+      if (!ghResult.ok && ghResult.missingConfig) {
+        this.showToast('⚠️ Não publicado. Conecte o GitHub para salvar estas alterações online.', 'warning');
         document.getElementById('admin-github-modal')?.classList.remove('is-hidden');
         document.getElementById('admin-github-modal')?.classList.add('is-open');
-      } else {
+        return false;
+      }
+      if (!ghResult.ok) {
         console.warn('GitHub publish warning status:', ghResult.status, ghResult.message);
         if (ghResult.status === 401) {
           alert('Token do GitHub expirado ou inválido. Por favor, reconfigure seu token.');
@@ -2000,11 +2121,59 @@ class KMAdminPanel {
         } else {
           alert(`Aviso ao publicar no GitHub (${ghResult.status}): ${ghResult.message || 'Verifique as permissões do token.'}`);
         }
-        this.showToast('⚠️ Salvo localmente, mas falhou ao enviar para o GitHub.');
+        this.showToast('⚠️ Não publicado. As alterações continuam pendentes nesta tela.', 'error');
+        return false;
       }
+
+      published = true;
+      document.body.classList.remove('has-unsaved-changes');
+      this.hasUnsavedChanges = false;
+
+      let localMirrorFailed = false;
+      try {
+        if (!kmCMS.saveContent(contentToSave)) localMirrorFailed = true;
+      } catch (localErr) {
+        localMirrorFailed = true;
+        console.warn('Admin: falha ao atualizar o cache local após publicar:', localErr);
+      }
+
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        try {
+          const diskRes = await fetch('/api/save-content', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(contentToSave)
+          });
+          if (!diskRes.ok) localMirrorFailed = true;
+        } catch (diskErr) {
+          localMirrorFailed = true;
+          console.warn('Admin: aviso ao gravar content.json no disco local', diskErr);
+        }
+      }
+
+      if (window.opener && !window.opener.closed) {
+        try {
+          window.opener.postMessage({ type: 'CONTENT_UPDATED', data: contentToSave }, window.location.origin);
+        } catch (_) {}
+      }
+
+      this.updateGitHubWarningBar();
+      this.showToast(
+        localMirrorFailed
+          ? '✓ Publicado no GitHub; a cópia local deste dispositivo não foi atualizada.'
+          : '🚀 Salvo no GitHub com sucesso! O site oficial já está atualizando.',
+        localMirrorFailed ? 'warning' : 'success'
+      );
+      return true;
     } catch (err) {
       console.warn('GitHub publish error:', err);
-      this.showToast('✓ Salvo localmente! (GitHub offline)');
+      if (published) {
+        this.showToast('✓ Publicado no GitHub; houve falha ao atualizar uma cópia local.', 'warning');
+        return true;
+      }
+      this.showToast('⚠️ Não publicado. Nenhuma cópia local foi salva; tente novamente.', 'error');
+      alert(`Falha ao publicar no GitHub: ${err.message}`);
+      return false;
     } finally {
       this.isSaving = false;
       if (saveBtn) {
@@ -2221,25 +2390,8 @@ class KMAdminPanel {
         ghPublishBtn.innerHTML = '⏳ Publicando...';
 
         try {
-          const content = this.extractCurrentContent();
-          content.updatedAt = new Date().toISOString();
-
-          const ghResult = await this.publishToGitHub(content);
-
-          if (ghResult.ok) {
-            kmCMS.saveContent(content);
-            this.showToast('🚀 Sucesso! Publicado no GitHub. O site oficial para todos os visitantes já está atualizado!');
-            closeModal();
-          } else {
-            if (ghResult.status === 401) {
-              alert('Token do GitHub inválido ou expirado. Por favor, reconfigure seu token.');
-              openModal();
-            } else if (ghResult.status === 409) {
-              alert('Houve um conflito temporário de sincronização no GitHub (dois salvamentos simultâneos). Clique em Publicar novamente para consolidar.');
-            } else {
-              alert(`Erro ao publicar no GitHub (${ghResult.status}): ${ghResult.message || 'Erro desconhecido'}`);
-            }
-          }
+          const published = await this.saveAllChanges();
+          if (published) closeModal();
         } catch (err) {
           alert(`Falha ao comunicar com o GitHub: ${err.message}`);
         } finally {
@@ -2287,18 +2439,21 @@ class KMAdminPanel {
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = async (event) => {
           try {
             const text = event.target.result;
-            const ok = kmCMS.importJSON(text);
-            if (ok) {
-              this.showToast('✓ Conteúdo importado com sucesso!');
-              setTimeout(() => location.reload(), 1000);
-            } else {
-              alert('Arquivo JSON inválido. Verifique a formatação do arquivo.');
+            const imported = JSON.parse(text);
+            if (!imported || typeof imported !== 'object' || Array.isArray(imported)) {
+              throw new Error('O arquivo não contém um objeto de conteúdo válido.');
             }
+            this.hasUnsavedChanges = true;
+            document.body.classList.add('has-unsaved-changes');
+            kmCMS.data = deepMerge(defaultCMSContent, imported);
+            await kmCMS.applyToPage();
+            const published = await this.saveAllChanges();
+            if (published) this.showToast('✓ Conteúdo importado e publicado online!');
           } catch (err) {
-            alert('Erro ao ler o arquivo JSON selecionado.');
+            alert(`Não foi possível importar o JSON: ${err.message}`);
           } finally {
             importFileInput.value = '';
           }

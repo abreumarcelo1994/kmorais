@@ -16,7 +16,7 @@ O projeto foi construído sob uma arquitetura estática moderna (Jamstack) sem d
 ### Stack Tecnológica
 - **Frontend Core**: HTML5 Semântico, CSS3 Moderno (Custom Properties, Grid, Flexbox, `content-visibility: auto`), JavaScript Puro (ES6+ modular).
 - **Player de Vídeo Customizado**: Player proprietário minimalista com ativação em qualquer canto, controle de volume retrátil horizontal, início mudo nativo e `preload="none"` em vitrines para zerar o consumo inicial de banda.
-- **Painel Administrativo (CMS)**: Sistema de edição visual in-browser (`admin.html`) protegido por senha, com persistência via `content.json`, armazenamento local de alta velocidade em `IndexedDB` e envio de mídias pela GitHub API. Imagens usam URLs imutáveis do GitHub Raw e só são aplicadas após validação de acesso público; vídeos acima de 24 MiB e até 70 MiB usam Git Data API e continuam publicados no GitHub Pages.
+- **Painel Administrativo (CMS)**: Sistema de edição visual in-browser (`admin.html`) protegido por senha, com publicação online antes do cache local. Categorias usam IDs estáveis em `content.json`; filtros, títulos, `index.html`, `admin.html`, `llms.txt` e `sitemap.xml` são sincronizados no mesmo commit. Imagens usam URLs imutáveis do GitHub Raw e só são aplicadas após validação; vídeos de até 32 MiB usam Git Data API e continuam no GitHub Pages.
 - **Servidor de Desenvolvimento Local**: Node.js com suporte completo a **HTTP 206 Range Requests** em `server.js` para streaming contínuo de vídeos MP4.
 
 ---

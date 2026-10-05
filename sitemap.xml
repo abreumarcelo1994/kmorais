@@ -4,7 +4,7 @@
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
   <url>
     <loc>https://kellymorais.com.br/</loc>
-    <lastmod>2026-10-04T21:58:50-03:00</lastmod>
+    <lastmod>2026-10-04T22:42:27-03:00</lastmod>
 
     <!-- ============================================================== -->
     <!-- 1. IMAGENS OFICIAIS (GOOGLE IMAGENS / GOOGLE LENS)            -->
@@ -29,6 +29,7 @@
       <image:title>Kelly Morais no TikTok - Rotina e Maternidade Real</image:title>
       <image:caption>Comunidade de mais de 31 mil seguidores acompanhando dicas reais de consumo e maternidade.</image:caption>
     </image:image>
+    <!-- KM_CMS_BRANDS_START -->
     <image:image>
       <image:loc>https://raw.githubusercontent.com/abreumarcelo1994/kmorais/main/media/1791157640961_design_sem_nome__12_.webp</image:loc>
       <image:title>Logo FOX Cycles</image:title>
@@ -39,6 +40,12 @@
       <image:title>Logo Mercado Livre</image:title>
       <image:caption>Marca atendida por Kelly Morais em campanhas de conteúdo UGC.</image:caption>
     </image:image>
+    <image:image>
+      <image:loc>https://raw.githubusercontent.com/abreumarcelo1994/kmorais/e0e53d45b54879c479efa32357bdd07cfe30c0f1/media/1791162892268_copy_042a1e1e-9be3-4fd5-a3b6-7410e6a3fe70.jpg</image:loc>
+      <image:title>Logo Seda</image:title>
+      <image:caption>Marca atendida por Kelly Morais em campanhas de conteúdo UGC.</image:caption>
+    </image:image>
+    <!-- KM_CMS_BRANDS_END -->
 
     <!-- ============================================================== -->
     <!-- 2. VÍDEOS OFICIAIS (GOOGLE VÍDEOS / GOOGLE SEARCH RICH SNIPPET)-->
@@ -58,6 +65,14 @@
       <video:tag>Vídeos para Ads</video:tag>
       <video:tag>TikTok Ads</video:tag>
       <video:tag>Reels</video:tag>
+      <!-- KM_CMS_CATEGORIES_START -->
+      <video:tag>Automotivo</video:tag>
+      <video:tag>Tech</video:tag>
+      <video:tag>Casa &amp; Decor</video:tag>
+      <video:tag>Maternidade</video:tag>
+      <video:tag>Beleza &amp; Autocuidado</video:tag>
+      <video:tag>Marketplace &amp; Ads</video:tag>
+      <!-- KM_CMS_CATEGORIES_END -->
     </video:video>
 
     <!-- Destaque 02: Case Get Ready With Me (GRWM - Moda & Beleza) -->
