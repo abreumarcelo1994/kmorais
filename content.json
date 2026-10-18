@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-10-05T01:22:40.972Z",
+  "updatedAt": "2026-10-18T21:41:29.616Z",
   "hero": {
     "eyebrow": "KELLY MORAIS · CREATOR + MARKETING",
-    "title": "Conteúdo que<br><em>parece conversa</em><br>e gera ação.",
+    "title": "Vìdeos que<br><em>parece conversa</em><br>e gera ação.",
     "text": "UGC com a autenticidade de uma mãe real, a visão de quem fez marketing de e-commerce e o roteiro que uma campanha precisa para performar.",
     "sticker": "a vibe que<br><strong>para o scroll</strong>",
     "video": "https://abreumarcelo1994.github.io/kmorais/media/1791081854407_img_3604.mov",
@@ -70,12 +70,36 @@
   "portfolioTitle": "Cases que<br><em>fazem vender.</em>",
   "portfolioIntro": "Do roteiro ao video final, cada entrega nasce alinhada ao objetivo da marca: conectar, explicar ou converter.",
   "categories": [
-    { "id": "automotivo", "name": "Automotivo", "description": "produto em uso, sem enrolacao" },
-    { "id": "tech", "name": "Tech", "description": "explicacao simples, desejo imediato" },
-    { "id": "casa", "name": "Casa & Decor", "description": "detalhes que fazem sentir" },
-    { "id": "maternidade", "name": "Maternidade", "description": "vida real que gera confianca" },
-    { "id": "beleza", "name": "Beleza & Autocuidado", "description": "textura, rotina e resultado" },
-    { "id": "marketplace", "name": "Marketplace & Ads", "description": "video curto com foco no produto" }
+    {
+      "id": "automotivo",
+      "name": "Automotivo",
+      "description": "produto em uso, sem enrolacao"
+    },
+    {
+      "id": "tech",
+      "name": "Tech",
+      "description": "explicacao simples, desejo imediato"
+    },
+    {
+      "id": "casa",
+      "name": "Casa & Decor",
+      "description": "detalhes que fazem sentir"
+    },
+    {
+      "id": "maternidade",
+      "name": "Maternidade",
+      "description": "vida real que gera confianca"
+    },
+    {
+      "id": "beleza",
+      "name": "Beleza & Autocuidado",
+      "description": "textura, rotina e resultado"
+    },
+    {
+      "id": "marketplace",
+      "name": "Marketplace & Ads",
+      "description": "video curto com foco no produto"
+    }
   ],
   "portfolioVideos": [
     {
