@@ -24,10 +24,10 @@
   width: 100%;
   max-width: 400px;
   background: var(--ink);
-  border: 1px solid rgba(214, 238, 130, 0.25);
+  border: 1px solid rgba(201, 143, 131, 0.25);
   border-radius: 8px;
   padding: 36px 30px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(214, 238, 130, 0.08);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(201, 143, 131, 0.08);
   color: var(--paper);
   text-align: center;
   position: relative;
@@ -37,7 +37,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(214, 238, 130, 0.12);
+  background: rgba(201, 143, 131, 0.12);
   color: var(--lime);
   font: 700 10px var(--mono);
   letter-spacing: .12em;
@@ -100,7 +100,7 @@
 }
 
 .admin-login-btn:hover {
-  background: #e2ff94;
+  background: #d6a49a;
   transform: translateY(-2px);
 }
 
@@ -120,7 +120,7 @@
   z-index: 10000;
   background: rgba(24, 30, 27, 0.94);
   backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(214, 238, 130, 0.3);
+  border-bottom: 1px solid rgba(201, 143, 131, 0.3);
   padding: 10px 24px;
   display: flex;
   align-items: center;
@@ -192,9 +192,9 @@
 }
 
 .admin-btn-save:hover {
-  background: #e2ff94;
+  background: #d6a49a;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(214, 238, 130, 0.3);
+  box-shadow: 0 4px 12px rgba(201, 143, 131, 0.3);
 }
 
 .admin-btn-view {
@@ -247,12 +247,12 @@ body.is-admin-mode .site-header {
 }
 
 [contenteditable="true"]:hover {
-  background: rgba(214, 238, 130, 0.12);
-  box-shadow: 0 0 0 2px rgba(214, 238, 130, 0.4);
+  background: rgba(201, 143, 131, 0.12);
+  box-shadow: 0 0 0 2px rgba(201, 143, 131, 0.4);
 }
 
 [contenteditable="true"]:focus {
-  background: rgba(214, 238, 130, 0.18);
+  background: rgba(201, 143, 131, 0.18);
   box-shadow: 0 0 0 2px var(--lime);
 }
 
@@ -327,7 +327,7 @@ body.is-admin-mode .site-header {
   background: var(--lime);
   color: var(--ink);
   transform: scale(1.2);
-  box-shadow: 0 0 14px rgba(214, 238, 130, 0.6);
+  box-shadow: 0 0 14px rgba(201, 143, 131, 0.6);
 }
 
 /* 4. Modal de Edição de Mídia (Vídeo / Capa / Foto) */
@@ -362,7 +362,7 @@ body.is-admin-mode .site-header {
   width: 100%;
   max-width: 500px;
   background: var(--ink);
-  border: 1px solid rgba(214, 238, 130, 0.3);
+  border: 1px solid rgba(201, 143, 131, 0.3);
   border-radius: 8px;
   padding: 28px;
   color: var(--paper);
@@ -489,8 +489,8 @@ body.is-admin-mode .site-header {
 /* Área de Dropzone / Upload do PC */
 .admin-file-dropzone {
   position: relative;
-  border: 2px dashed rgba(214, 238, 130, 0.35);
-  background: rgba(214, 238, 130, 0.03);
+  border: 2px dashed rgba(201, 143, 131, 0.35);
+  background: rgba(201, 143, 131, 0.03);
   border-radius: 8px;
   padding: 20px 16px;
   text-align: center;
@@ -501,12 +501,12 @@ body.is-admin-mode .site-header {
 
 .admin-file-dropzone:hover {
   border-color: var(--lime);
-  background: rgba(214, 238, 130, 0.08);
+  background: rgba(201, 143, 131, 0.08);
 }
 
 .admin-file-dropzone.is-dragover {
   border-color: var(--lime);
-  background: rgba(214, 238, 130, 0.15);
+  background: rgba(201, 143, 131, 0.15);
   transform: scale(1.01);
 }
 
@@ -555,7 +555,7 @@ body.is-admin-mode .site-header {
   align-items: center;
   justify-content: space-between;
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(214, 238, 130, 0.3);
+  border: 1px solid rgba(201, 143, 131, 0.3);
   padding: 10px 14px;
   border-radius: 6px;
   color: #ffffff;
@@ -615,8 +615,8 @@ body.is-admin-mode .site-header {
 }
 
 .admin-gh-token-badge.is-connected {
-  background: rgba(214, 238, 130, 0.1);
-  border-color: rgba(214, 238, 130, 0.35);
+  background: rgba(201, 143, 131, 0.1);
+  border-color: rgba(201, 143, 131, 0.35);
   color: var(--lime);
 }
 
@@ -718,9 +718,9 @@ body.is-admin-mode .site-header {
 
 .admin-url-feedback.info {
   display: block;
-  background: rgba(214, 238, 130, 0.12);
+  background: rgba(201, 143, 131, 0.12);
   color: var(--lime);
-  border: 1px solid rgba(214, 238, 130, 0.35);
+  border: 1px solid rgba(201, 143, 131, 0.35);
 }
 
 .admin-url-feedback.warn {
@@ -732,7 +732,7 @@ body.is-admin-mode .site-header {
 
 .admin-url-feedback.success {
   display: block;
-  background: rgba(214, 238, 130, 0.2);
+  background: rgba(201, 143, 131, 0.2);
   color: #ffffff;
   border: 1px solid var(--lime);
 }
@@ -743,14 +743,14 @@ body.is-admin-mode .site-header {
   background: var(--lime);
   color: var(--ink);
   font-weight: 800;
-  box-shadow: 0 0 14px rgba(214, 238, 130, 0.35);
-  border: 1px solid #c8e668;
+  box-shadow: 0 0 14px rgba(201, 143, 131, 0.35);
+  border: 1px solid #b8786d;
 }
 
 .admin-btn-publish:hover {
-  background: #e2ff94;
+  background: #d6a49a;
   transform: translateY(-2px);
-  box-shadow: 0 4px 18px rgba(214, 238, 130, 0.55);
+  box-shadow: 0 4px 18px rgba(201, 143, 131, 0.55);
 }
 
 .admin-btn-gh-config {
@@ -786,7 +786,7 @@ body.is-admin-mode .site-header {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(214, 238, 130, 0.12);
+  background: rgba(201, 143, 131, 0.12);
   color: var(--lime);
   font: 700 10px var(--mono);
   letter-spacing: .08em;
@@ -871,7 +871,7 @@ body.is-admin-mode .site-header {
 
 .admin-gh-status.is-success {
   display: block;
-  background: rgba(214, 238, 130, 0.15);
+  background: rgba(201, 143, 131, 0.15);
   color: var(--lime);
   border: 1px solid var(--lime);
 }
@@ -942,7 +942,7 @@ body.is-admin-mode .site-header {
 .admin-mobile-menu-btn {
   display: none;
   background: transparent;
-  border: 1.5px solid rgba(214, 238, 130, 0.4);
+  border: 1.5px solid rgba(201, 143, 131, 0.4);
   color: var(--lime);
   border-radius: 6px;
   padding: 6px 10px;
@@ -955,7 +955,7 @@ body.is-admin-mode .site-header {
 
 .admin-mobile-menu-btn:hover,
 .admin-mobile-menu-btn.is-active {
-  background: rgba(214, 238, 130, 0.1);
+  background: rgba(201, 143, 131, 0.1);
   border-color: var(--lime);
 }
 
@@ -969,7 +969,7 @@ body.is-admin-mode .site-header {
   z-index: 9999;
   background: rgba(18, 24, 21, 0.98);
   backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(214, 238, 130, 0.25);
+  border-top: 1px solid rgba(201, 143, 131, 0.25);
   border-radius: 18px 18px 0 0;
   padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
   box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.5);
@@ -1025,8 +1025,8 @@ body.is-admin-mode .site-header {
 }
 
 .admin-mobile-action-btn:active {
-  background: rgba(214, 238, 130, 0.12);
-  border-color: rgba(214, 238, 130, 0.4);
+  background: rgba(201, 143, 131, 0.12);
+  border-color: rgba(201, 143, 131, 0.4);
   color: var(--lime);
 }
 
@@ -1040,7 +1040,7 @@ body.is-admin-mode .site-header {
 }
 
 .admin-mobile-action-btn.is-primary:active {
-  background: #e2ff94;
+  background: #d6a49a;
 }
 
 .admin-mobile-action-btn.is-danger {
@@ -1099,14 +1099,14 @@ body.is-admin-mode .site-header {
   text-transform: uppercase;
   letter-spacing: .06em;
   cursor: pointer;
-  box-shadow: 0 6px 24px rgba(214, 238, 130, 0.45);
+  box-shadow: 0 6px 24px rgba(201, 143, 131, 0.45);
   transition: transform 0.2s, box-shadow 0.2s;
   -webkit-tap-highlight-color: transparent;
 }
 
 .admin-mobile-fab-save:active {
   transform: scale(0.96);
-  box-shadow: 0 3px 12px rgba(214, 238, 130, 0.3);
+  box-shadow: 0 3px 12px rgba(201, 143, 131, 0.3);
 }
 
 @media (max-width: 768px) {
@@ -1184,7 +1184,7 @@ body.is-admin-mode .site-header {
     transform: translateY(100%);
     transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     border: none;
-    border-top: 1px solid rgba(214, 238, 130, 0.2);
+    border-top: 1px solid rgba(201, 143, 131, 0.2);
   }
 
   /* Handle visual para indicar que é arrastável */
@@ -1238,7 +1238,7 @@ body.is-admin-mode .site-header {
     max-width: 100%;
     border-radius: 20px 20px 0 0;
     border: none;
-    border-top: 1px solid rgba(214, 238, 130, 0.2);
+    border-top: 1px solid rgba(201, 143, 131, 0.2);
   }
 
   /* ---- Toast: posição mobile ---- */
@@ -1349,7 +1349,7 @@ body.has-unsaved-changes #admin-save-btn,
 body.has-unsaved-changes #admin-save-btn-mobile,
 body.has-unsaved-changes #admin-fab-save-btn {
   animation: adminPulseSave 1.8s infinite !important;
-  box-shadow: 0 0 16px rgba(214, 238, 130, 0.6) !important;
+  box-shadow: 0 0 16px rgba(201, 143, 131, 0.6) !important;
 }
 
 @keyframes adminPulseSave {
