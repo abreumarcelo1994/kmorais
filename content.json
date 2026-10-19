@@ -221,36 +221,6 @@
       "video": "https://res.cloudinary.com/demo/video/upload/q_auto,w_400/dog.mp4",
       "poster": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=300&q=45&auto=format%2Ccompress&fit=crop&fm=webp",
       "label": "formato sensorial"
-    },
-    {
-      "video": "https://res.cloudinary.com/demo/video/upload/q_auto,w_400/snow_deer.mp4",
-      "poster": "https://images.unsplash.com/photo-1612817288484-6f916006741a?w=300&q=45&auto=format%2Ccompress&fit=crop&fm=webp",
-      "label": "rotina de cuidados"
-    },
-    {
-      "video": "https://res.cloudinary.com/demo/video/upload/q_auto,w_400/elephants.mp4",
-      "poster": "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=300&q=45&auto=format%2Ccompress&fit=crop&fm=webp",
-      "label": "foco em conversao"
-    },
-    {
-      "video": "https://res.cloudinary.com/demo/video/upload/q_auto,w_400/finish_line.mp4",
-      "poster": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=300&q=45&auto=format%2Ccompress&fit=crop&fm=webp",
-      "label": "roteiro para ads"
-    },
-    {
-      "video": "https://res.cloudinary.com/demo/video/upload/q_auto,w_400/sea_turtle.mp4",
-      "poster": "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=300&q=45&auto=format%2Ccompress&fit=crop&fm=webp",
-      "label": "marketplace trends"
-    },
-    {
-      "video": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-      "poster": "https://images.unsplash.com/photo-1556740749-887f6717d7e4?w=300&q=45&auto=format%2Ccompress&fit=crop&fm=webp",
-      "label": "demonstracao"
-    },
-    {
-      "video": "https://res.cloudinary.com/demo/video/upload/q_auto,w_400/dog.mp4",
-      "poster": "https://images.unsplash.com/photo-1556742111-a301076d9d18?w=300&q=45&auto=format%2Ccompress&fit=crop&fm=webp",
-      "label": "clips para campanha"
     }
   ],
   "realCases": [
